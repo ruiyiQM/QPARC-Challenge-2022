@@ -1,0 +1,741 @@
+#INFO: **** input file is /nas/longleaf/home/ryzhou/Qamuy/pyscf_result/TDHF/ccpvdz.py ****
+#!/usr/bin/env python
+#
+# Author: Xiao Wang <xiaowang314159@gmail.com>
+#
+"""
+This example first runs a closed-shell periodic EOM-EE-CCSD with K-point
+sampling, a.k.a. EOM-EE-KRCCSD, for singlet excited states on one of the
+three provided systems.
+Then a molecular EOM-EE-RCCSD based on Gamma-point Hartree-Fock is done, where
+a supercell (unit cell with its nmp replicas) is used.
+Excitation energies from the two sets of calculations should match.
+"""
+
+import numpy as np
+from pyscf import gto, scf, cc
+from pyscf.cc import eom_rccsd as mol_eom_rccsd
+from pyscf.pbc import gto, scf, cc
+from pyscf.pbc.cc import eom_kccsd_rhf as eom_krccsd
+from pyscf.pbc.tools.pbc import super_cell
+from pyscf.cc.rccsd import RCCSD
+from pyscf.pbc import tdscf
+
+cell = gto.Cell()
+cell.verbose = 7
+#cell.unit = 'B'
+cell.max_memory = 4000  # MB
+
+#
+# Hydrogen crystal
+#
+# cell.a = np.eye(3) * 7.0
+# cell.basis = 'sto-3g'
+# cell.atom = '''
+#     H 0.000000000000   0.000000000000   0.000000000000
+#     H 0.000000000000   0.000000000000   1.400000000000
+#     '''
+
+#
+# Helium crystal
+#
+cell.atom = '''
+C -0.58442   -0.32662  0.0    
+C  0.58442   0.32662   0.0    
+H  0.58442   1.40362   0.0    
+H -0.58442   -1.40362  0.0    
+C    1.8845799999999997       -0.32662  0.0    
+C    3.05342    0.32662  0.0    
+H    3.05342    1.40362  0.0    
+H    1.8845799999999997       -1.40362  0.0    
+'''
+#cell.basis = [[0, (1., 1.)], [0, (.5, 1.)]]
+cell.a = '''
+4.938000000, 0.0000000000, 0.00000000
+0.000000000, 25.000000000, 0.00000000
+0.000000000, 0.000000000, 25.000000000
+'''
+
+#
+# Diamond
+#
+# cell.atom = '''
+# C 0.000000000000   0.000000000000   0.000000000000
+# C 1.685068664391   1.685068664391   1.685068664391
+# '''
+cell.basis = 'cc-pvdz'
+# cell.pseudo = 'gth-pade'
+# cell.a = '''
+# 0.000000000, 3.370137329, 3.370137329
+# 3.370137329, 0.000000000, 3.370137329
+# 3.370137329, 3.370137329, 0.000000000'''
+
+
+cell.build()
+
+nmp = [1,1,1]
+#print (cas_list)
+#mycc = cc.KRCCSD(kmf,frozen=cas_list)
+# KRHF
+kpts = cell.make_kpts(nmp)
+kmf = scf.KRHF(cell, kpts=kpts, exxdiv=None).density_fit()
+ekrhf = kmf.kernel()
+
+td = tdscf.KTDHF(kmf)
+td.nstates = 5
+td.verbose = 5
+print(td.kernel()[0] )
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='c-202-11', release='3.10.0-514.el7.x86_64', version='#1 SMP Wed Oct 19 11:24:13 EDT 2016', machine='x86_64')  Threads 1
+Python 3.9.5 (default, Jun  4 2021, 12:28:51) 
+[GCC 7.5.0]
+numpy 1.21.2  scipy 1.7.1
+Date: Tue May 17 15:36:17 2022
+PySCF version 2.0.1
+PySCF path  /nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/pyscf
+
+[CONFIG] DEBUG = False
+[CONFIG] MAX_MEMORY = 4000
+[CONFIG] TMPDIR = /tmp
+[CONFIG] UNIT = angstrom
+[CONFIG] VERBOSE = 3
+[CONFIG] conf_file = None
+[INPUT] verbose = 7
+[INPUT] max_memory = 4000 
+[INPUT] num. atoms = 8
+[INPUT] num. electrons = 28
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT]  1 C     -0.584420000000  -0.326620000000   0.000000000000 AA   -1.104393741718  -0.617222346805   0.000000000000 Bohr
+[INPUT]  2 C      0.584420000000   0.326620000000   0.000000000000 AA    1.104393741718   0.617222346805   0.000000000000 Bohr
+[INPUT]  3 H      0.584420000000   1.403620000000   0.000000000000 AA    1.104393741718   2.652457382962   0.000000000000 Bohr
+[INPUT]  4 H     -0.584420000000  -1.403620000000   0.000000000000 AA   -1.104393741718  -2.652457382962   0.000000000000 Bohr
+[INPUT]  5 C      1.884580000000  -0.326620000000   0.000000000000 AA    3.561340059833  -0.617222346805   0.000000000000 Bohr
+[INPUT]  6 C      3.053420000000   0.326620000000   0.000000000000 AA    5.770127543269   0.617222346805   0.000000000000 Bohr
+[INPUT]  7 H      3.053420000000   1.403620000000   0.000000000000 AA    5.770127543269   2.652457382962   0.000000000000 Bohr
+[INPUT]  8 H      1.884580000000  -1.403620000000   0.000000000000 AA    3.561340059833  -2.652457382962   0.000000000000 Bohr
+[INPUT] ---------------- BASIS SET ---------------- 
+[INPUT] l, kappa, [nprim/nctr], expnt,             c_1 c_2 ...
+[INPUT] C
+[INPUT] 0    0    [8    /2   ]  6665              0.000692 -0.000146
+                                1000              0.005329 -0.001154
+                                228               0.027077 -0.005725
+                                64.71             0.101718 -0.023312
+                                21.06             0.27474 -0.063955
+                                7.495             0.448564 -0.149981
+                                2.797             0.285074 -0.127262
+                                0.5215            0.015204 0.544529
+[INPUT] 0    0    [1    /1   ]  0.1596               1
+[INPUT] 1    0    [3    /1   ]  9.439             0.038109
+                                2.002             0.20948
+                                0.5456            0.508557
+[INPUT] 1    0    [1    /1   ]  0.1517               1
+[INPUT] 2    0    [1    /1   ]  0.55                 1
+[INPUT] H
+[INPUT] 0    0    [3    /1   ]  13.01             0.019685
+                                1.962             0.137977
+                                0.4446            0.478148
+[INPUT] 0    0    [1    /1   ]  0.122                1
+[INPUT] 1    0    [1    /1   ]  0.727                1
+
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+nuclear repulsion = 125.52016099383
+number of shells = 32
+number of NR pGTOs = 132
+number of NR cGTOs = 76
+basis = cc-pvdz
+ecp = {}
+bas 0, expnt(s) = [6.665e+03 1.000e+03 2.280e+02 6.471e+01 2.106e+01 7.495e+00 2.797e+00
+ 5.215e-01]
+bas 1, expnt(s) = [0.1596]
+bas 2, expnt(s) = [9.439  2.002  0.5456]
+bas 3, expnt(s) = [0.1517]
+bas 4, expnt(s) = [0.55]
+bas 5, expnt(s) = [6.665e+03 1.000e+03 2.280e+02 6.471e+01 2.106e+01 7.495e+00 2.797e+00
+ 5.215e-01]
+bas 6, expnt(s) = [0.1596]
+bas 7, expnt(s) = [9.439  2.002  0.5456]
+bas 8, expnt(s) = [0.1517]
+bas 9, expnt(s) = [0.55]
+bas 10, expnt(s) = [13.01    1.962   0.4446]
+bas 11, expnt(s) = [0.122]
+bas 12, expnt(s) = [0.727]
+bas 13, expnt(s) = [13.01    1.962   0.4446]
+bas 14, expnt(s) = [0.122]
+bas 15, expnt(s) = [0.727]
+bas 16, expnt(s) = [6.665e+03 1.000e+03 2.280e+02 6.471e+01 2.106e+01 7.495e+00 2.797e+00
+ 5.215e-01]
+bas 17, expnt(s) = [0.1596]
+bas 18, expnt(s) = [9.439  2.002  0.5456]
+bas 19, expnt(s) = [0.1517]
+bas 20, expnt(s) = [0.55]
+bas 21, expnt(s) = [6.665e+03 1.000e+03 2.280e+02 6.471e+01 2.106e+01 7.495e+00 2.797e+00
+ 5.215e-01]
+bas 22, expnt(s) = [0.1596]
+bas 23, expnt(s) = [9.439  2.002  0.5456]
+bas 24, expnt(s) = [0.1517]
+bas 25, expnt(s) = [0.55]
+bas 26, expnt(s) = [13.01    1.962   0.4446]
+bas 27, expnt(s) = [0.122]
+bas 28, expnt(s) = [0.727]
+bas 29, expnt(s) = [13.01    1.962   0.4446]
+bas 30, expnt(s) = [0.122]
+bas 31, expnt(s) = [0.727]
+CPU time:         1.09
+lattice vectors  a1 [9.331467603, 0.000000000, 0.000000000]
+                 a2 [0.000000000, 47.243153114, 0.000000000]
+                 a3 [0.000000000, 0.000000000, 47.243153114]
+dimension = 3
+low_dim_ft_type = None
+Cell volume = 20827
+rcut = 20.089801000471617 (nimgs = [3 1 1])
+lattice sum = 64 cells
+precision = 1e-08
+pseudo = None
+ke_cutoff = 98708.05082920736
+    = [1320 6682 6682] mesh (58936843680 PWs)
+
+
+******** <class 'pyscf.pbc.scf.khf.KRHF'> ********
+method = KRHF-KSCF-RHF-SCF-RHF
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+SCF conv_tol = 1e-07
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = True
+direct_scf_tol = 1e-13
+chkfile to save SCF result = /tmp/tmpl191siip
+max_memory 4000 MB (current use 138 MB)
+
+
+******** PBC SCF flags ********
+N kpts = 1
+kpts = [[0. 0. 0.]]
+Exchange divergence treatment (exxdiv) = None
+DF object = <pyscf.pbc.df.df.GDF object at 0x2ba4be63c130>
+Set gradient conv threshold to 0.000316228
+Big error detected in the electron number of initial guess density matrix (Ne/cell = 28.0107)!
+  This can cause huge error in Fock matrix and lead to instability in SCF for low-dimensional systems.
+  DM is normalized wrt the number of electrons 28.0
+    CPU time for vnuc pass1: analytic int      4.49 sec, wall time      4.49 sec
+    CPU time for contracting Vnuc [0:16384]     13.46 sec, wall time     13.46 sec
+    CPU time for contracting Vnuc [16384:32768]     13.34 sec, wall time     13.35 sec
+    CPU time for contracting Vnuc [32768:49152]     13.34 sec, wall time     13.34 sec
+    CPU time for contracting Vnuc [49152:62846]     10.14 sec, wall time     10.14 sec
+    CPU time for contracting Vnuc     50.29 sec, wall time     50.29 sec
+    CPU time for get_nuc     54.78 sec, wall time     54.78 sec
+
+
+******** <class 'pyscf.pbc.df.df.GDF'> ********
+mesh = [15, 67, 67] (67335 PWs)
+auxbasis = None
+eta = 0.2
+exp_to_discard = None
+_cderi_to_save = /tmp/tmpq1ht9gcl
+len(kpts) = 1
+    kpts = [[0. 0. 0.]]
+Default auxbasis cc-pvdz-jkfit is used for C cc-pvdz
+Default auxbasis cc-pvdz-jkfit is used for H cc-pvdz
+num shells = 132, num cGTOs = 372
+Drop 0 primitive fitting functions
+make aux basis, num shells = 132, num cGTOs = 372
+auxcell.rcut 13.893106626891408
+make compensating basis, num shells = 28, num cGTOs = 100
+chgcell.rcut 11.482117703874595
+    CPU time for 3c2e     53.48 sec, wall time     53.49 sec
+Num uniq kpts 1
+uniq_kpts [[0. 0. 0.]]
+max_memory 3796.752384 (MB)  blocksize 251373
+Cholesky decomposition for j2c at kpt 0
+Symmetry pattern (k - [0. 0. 0.])*a= 2n pi
+    make_kpt for uniq_kptji_ids [0]
+kpt = [0. 0. 0.]
+adapted_ji_idx = [0]
+memory = 313.475072
+int3c2e [1/1], AO [0:32], ncol = 2926
+Symmetry pattern (k + [0. 0. 0.])*a= 2n pi
+    make_kpt for [0]
+    CPU time for j3c    110.30 sec, wall time    110.31 sec
+    CPU time for Init get_k_kpts    110.32 sec, wall time    110.33 sec
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.12 sec, wall time      0.12 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk    110.47 sec, wall time    110.48 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -454.00284378370606  E_coul = 172.90640590384407
+init E= -155.576276886032
+cond(S) = [3783.25787929]
+    CPU time for initialize scf    165.87 sec, wall time    165.91 sec
+HOMO = -0.138283334313  LUMO = -0.0760220555357
+     k-point                  mo_energy
+   0 ( 0.000  0.000  0.000)   [-11.36711532 -11.36152723 -11.36025504 -11.35877471  -1.72882018
+  -1.16887892  -1.07799669  -0.88046466  -0.5262277   -0.50384296
+  -0.44405863  -0.40901642  -0.33330012  -0.13828333] [-0.07602206  0.13264244  0.16265478  0.21328238  0.27092816  0.27651506
+  0.28137898  0.41656814  0.42070712  0.57017691  0.62012944  0.64983441
+  0.67245731  0.69583741  0.69722178  0.74778588  0.80354344  0.8192203
+  0.85645207  0.86059753  0.91460966  0.94275358  1.09290316  1.13037262
+  1.13668074  1.18673364  1.19344663  1.19922396  1.21311976  1.23200998
+  1.28138068  1.29822677  1.31831588  1.49633553  1.56866711  1.63348478
+  1.73460665  1.74355103  1.82515835  1.83186324  1.85057982  1.89290703
+  1.9129014   2.0181629   2.0207614   2.08303924  2.2183497   2.25744079
+  2.25767156  2.27711438  2.38496399  2.3916215   2.4537204   2.48052916
+  2.60022077  2.61221618  2.62424432  2.65027735  2.98037922  3.31584216
+  3.34417958  3.37870535]
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -454.74175586783343  E_coul = 174.97322325687878
+cycle= 1 E= -154.248371617125  delta_E= 1.33  |g|= 0.322  |ddm|= 2.85
+    CPU time for cycle= 1      0.70 sec, wall time      0.69 sec
+diis-norm(errvec)=0.757798
+diis-c [-0.57425749  1.        ]
+HOMO = -0.332446737427  LUMO = 0.0693501524127
+     k-point                  mo_energy
+   0 ( 0.000  0.000  0.000)   [-11.29838979 -11.29769616 -11.29654849 -11.29568667  -1.18257742
+  -0.99848035  -0.947491    -0.82411812  -0.64956721  -0.64199215
+  -0.59143395  -0.52879377  -0.52669456  -0.33244674] [0.06935015 0.16377095 0.22355877 0.23878202 0.32236206 0.33355731
+ 0.41766846 0.42711908 0.42919211 0.62872839 0.65046905 0.68743144
+ 0.73270789 0.74037987 0.76545949 0.79523147 0.8363502  0.86192899
+ 0.89222145 0.9034606  0.98540138 1.00293044 1.11731458 1.17406462
+ 1.17630241 1.21428152 1.22084703 1.22103979 1.26253364 1.26733223
+ 1.31755168 1.33008451 1.34536829 1.53510073 1.60875687 1.67718506
+ 1.77628171 1.78743713 1.8569998  1.8635096  1.88293719 1.91556476
+ 1.95860073 2.04541995 2.0515937  2.12806003 2.25137105 2.28349447
+ 2.30123312 2.31800964 2.42567447 2.43529406 2.50579828 2.51922809
+ 2.64273336 2.65129124 2.66886256 2.6848271  3.0234753  3.36361359
+ 3.38626524 3.43494053]
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -455.4495565534114  E_coul = 175.64600953206872
+cycle= 2 E= -154.283386027513  delta_E= -0.035  |g|= 0.0831  |ddm|= 0.372
+    CPU time for cycle= 2      0.70 sec, wall time      0.69 sec
+diis-norm(errvec)=0.193112
+diis-c [-0.01371753 -0.25798611  1.25798611]
+HOMO = -0.309172858391  LUMO = 0.0960727258182
+     k-point                  mo_energy
+   0 ( 0.000  0.000  0.000)   [-11.25164059 -11.25092164 -11.24973305 -11.24888086  -1.15144702
+  -0.9700137   -0.91763212  -0.802579    -0.63113821  -0.62525603
+  -0.56838405  -0.51467992  -0.5029898   -0.30917286] [0.09607273 0.17608184 0.2288454  0.25790605 0.34019946 0.35038442
+ 0.43529188 0.43793588 0.44893997 0.65757837 0.66811967 0.70474535
+ 0.75289436 0.76633616 0.78924199 0.81389482 0.85280836 0.88098062
+ 0.90854962 0.92218907 1.01166054 1.02654035 1.14025568 1.19691751
+ 1.19884336 1.23160713 1.23767473 1.23971809 1.28741019 1.29112931
+ 1.33547788 1.34834097 1.36601743 1.55590663 1.62988084 1.69445514
+ 1.79958178 1.812528   1.87685562 1.88415388 1.90260184 1.93353138
+ 1.9839556  2.06550109 2.07181107 2.15194898 2.27168587 2.30091837
+ 2.32669373 2.34291696 2.44868441 2.45750189 2.53640206 2.54529086
+ 2.66931725 2.67552921 2.69329163 2.71025656 3.04852302 3.39110261
+ 3.41363082 3.46645761]
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.12 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -455.3085368929984  E_coul = 175.50213832676266
+cycle= 3 E= -154.286237572406  delta_E= -0.00285  |g|= 0.0143  |ddm|= 0.171
+    CPU time for cycle= 3      0.70 sec, wall time      0.69 sec
+diis-norm(errvec)=0.0331496
+diis-c [-6.05069423e-04 -4.66003005e-02  9.39521394e-02  9.52648161e-01]
+HOMO = -0.315816274886  LUMO = 0.089559235498
+     k-point                  mo_energy
+   0 ( 0.000  0.000  0.000)   [-11.26823809 -11.26752418 -11.26650216 -11.2656468   -1.15945926
+  -0.9782575   -0.92604026  -0.80700982  -0.63753648  -0.63165746
+  -0.57850098  -0.52166183  -0.50949111  -0.31581627] [0.08955924 0.17537172 0.22762009 0.25378615 0.33799825 0.34854247
+ 0.43376297 0.43617723 0.44064403 0.65053809 0.66312651 0.69877309
+ 0.74669954 0.75909077 0.78540213 0.8089983  0.84818119 0.87524641
+ 0.90360223 0.91779383 1.00433956 1.01950228 1.13420215 1.19098368
+ 1.19236181 1.22704603 1.2328275  1.23526415 1.27887882 1.28442185
+ 1.33314872 1.34343836 1.36195483 1.54980678 1.62365475 1.68958677
+ 1.79402797 1.80641326 1.87324247 1.88011555 1.89791231 1.93171293
+ 1.97794937 2.06222484 2.06821777 2.14440516 2.26753446 2.29842931
+ 2.31947658 2.33579829 2.44204879 2.45112122 2.52693245 2.54045189
+ 2.66290323 2.67173679 2.68610315 2.70620398 3.04356028 3.38404504
+ 3.40707368 3.4580345 ]
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -455.37808798032864  E_coul = 175.57159983260095
+cycle= 4 E= -154.286327153898  delta_E= -8.96e-05  |g|= 0.00315  |ddm|= 0.0332
+    CPU time for cycle= 4      0.70 sec, wall time      0.69 sec
+diis-norm(errvec)=0.00688649
+diis-c [-2.10291354e-05  1.46757406e-02 -6.12235778e-02 -8.77861028e-02
+  1.13433394e+00]
+HOMO = -0.314839455075  LUMO = 0.0903772065451
+     k-point                  mo_energy
+   0 ( 0.000  0.000  0.000)   [-11.26684382 -11.2661292  -11.26514661 -11.26428758  -1.15852589
+  -0.97715394  -0.9251963   -0.80666289  -0.63723733  -0.63137625
+  -0.5774524   -0.52155817  -0.50859635  -0.31483946] [0.09037721 0.17557717 0.22745915 0.25429718 0.33821944 0.34871409
+ 0.43374982 0.43616528 0.44142865 0.65123471 0.66394444 0.69928163
+ 0.74725144 0.7599786  0.78564216 0.80939448 0.8489647  0.87598384
+ 0.90394255 0.91801029 1.0048201  1.02003624 1.13479105 1.19148411
+ 1.19293615 1.2273672  1.23320659 1.23554911 1.27979943 1.28511234
+ 1.33328134 1.34377478 1.36220842 1.55047325 1.62435864 1.69016754
+ 1.79453483 1.80699689 1.87352594 1.88044305 1.89834179 1.93178033
+ 1.97836361 2.06241479 2.06845953 2.14512174 2.26785967 2.29856844
+ 2.32008782 2.33642517 2.44269132 2.45178447 2.52783821 2.54072066
+ 2.66333744 2.6719143  2.68673844 2.70635836 3.0439307  3.38459156
+ 3.40753638 3.45887617]
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -455.372001441114  E_coul = 175.56550746337504
+cycle= 5 E= -154.286332983909  delta_E= -5.83e-06  |g|= 0.000714  |ddm|= 0.0101
+    CPU time for cycle= 5      0.70 sec, wall time      0.69 sec
+diis-norm(errvec)=0.00163407
+diis-c [-2.13255161e-06  1.43465362e-03 -3.38118157e-03 -2.85343112e-02
+ -7.63840953e-04  1.03124468e+00]
+HOMO = -0.31475676141  LUMO = 0.0904559443178
+     k-point                  mo_energy
+   0 ( 0.000  0.000  0.000)   [-11.26674113 -11.26602772 -11.26507067 -11.26421057  -1.15847593
+  -0.97712173  -0.92511733  -0.806621    -0.63721643  -0.63134001
+  -0.57737234  -0.52156372  -0.50851006  -0.31475676] [0.09045594 0.17562697 0.2274541  0.25435182 0.33826747 0.34874495
+ 0.43376129 0.43618246 0.4414622  0.65132648 0.66402684 0.69931903
+ 0.74731575 0.76005753 0.78568564 0.80945306 0.84903516 0.87606057
+ 0.90397934 0.91805138 1.00485975 1.02009199 1.13485861 1.19155323
+ 1.19298893 1.22742116 1.23324557 1.23560553 1.27987633 1.28515541
+ 1.33333421 1.34382535 1.36226934 1.55053619 1.62442295 1.69021976
+ 1.79459487 1.80705681 1.8735855  1.88050602 1.89840393 1.93183263
+ 1.97841711 2.06247054 2.06851537 2.14519505 2.26791748 2.29862164
+ 2.3201498  2.33649416 2.44275839 2.45184688 2.52790298 2.5407799
+ 2.66339497 2.67196843 2.68679965 2.70642375 3.04399868 3.38465021
+ 3.40760429 3.45895081]
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.13 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -455.37234514526455  E_coul = 175.56585094270812
+cycle= 6 E= -154.286333208727  delta_E= -2.25e-07  |g|= 0.000341  |ddm|= 0.00167
+    CPU time for cycle= 6      0.69 sec, wall time      0.69 sec
+diis-norm(errvec)=0.000787045
+diis-c [-7.99392475e-08 -1.21385294e-03  5.81312966e-03  2.77673785e-04
+ -1.25092232e-01  3.40124838e-01  7.80090444e-01]
+HOMO = -0.314748525136  LUMO = 0.0904613448745
+     k-point                  mo_energy
+   0 ( 0.000  0.000  0.000)   [-11.2667357  -11.26602336 -11.26508995 -11.26422888  -1.15847903
+  -0.97712858  -0.92511383  -0.8066162   -0.63721912  -0.63133658
+  -0.57736756  -0.52157266  -0.50850053  -0.31474853] [0.09046134 0.17563796 0.22745255 0.25435769 0.33827661 0.34875014
+ 0.43376343 0.43618593 0.44145528 0.65133805 0.66403698 0.69931828
+ 0.74732278 0.76006314 0.78569273 0.80946102 0.84904308 0.87606812
+ 0.9039812  0.91805612 1.0048584  1.02009549 1.13486564 1.19156224
+ 1.19299069 1.22742796 1.2332481  1.23561476 1.27987889 1.28515549
+ 1.33334665 1.34383203 1.36228094 1.55054169 1.62442783 1.69022381
+ 1.79460189 1.80706205 1.87359704 1.88051698 1.89841269 1.93184653
+ 1.97842272 2.06248176 2.06852608 2.14520037 2.26792717 2.29863387
+ 2.32015428 2.33649978 2.44276385 2.45185206 2.52790253 2.54079009
+ 2.66340045 2.67198004 2.68680338 2.70643668 3.04400996 3.38465502
+ 3.40761197 3.45895459]
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.13 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -455.37261535546605  E_coul = 175.56612111983904
+cycle= 7 E= -154.286333241797  delta_E= -3.31e-08  |g|= 3.05e-05  |ddm|= 0.000428
+    CPU time for cycle= 7      0.69 sec, wall time      0.68 sec
+HOMO = -0.314747898589  LUMO = 0.0904589989174
+     k-point                  mo_energy
+   0 ( 0.000  0.000  0.000)   [-11.26674076 -11.26602842 -11.26509507 -11.264234    -1.15848028
+  -0.97712751  -0.92511654  -0.80661669  -0.63722062  -0.63133652
+  -0.57736706  -0.52157473  -0.50850046  -0.3147479 ] [0.090459   0.17563783 0.22745127 0.25435695 0.3382763  0.34874971
+ 0.43376298 0.43618547 0.44145345 0.65133668 0.66403701 0.69931683
+ 0.74732214 0.76006183 0.78569255 0.8094603  0.84904343 0.8760669
+ 0.90397988 0.91805462 1.00485609 1.02009409 1.1348645  1.19156145
+ 1.1929888  1.22742654 1.23324715 1.23561427 1.27987658 1.28515534
+ 1.33334697 1.34383147 1.36228074 1.55054119 1.62442698 1.69022322
+ 1.79460136 1.80706104 1.87359719 1.88051655 1.89841206 1.93184724
+ 1.97842175 2.06248144 2.06852598 2.14519861 2.26792688 2.29863409
+ 2.32015303 2.33649807 2.44276241 2.45185146 2.5279005  2.54078949
+ 2.66339887 2.67198028 2.68680195 2.70643554 3.04400941 3.38465396
+ 3.40761022 3.45895273]
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.13 sec
+Ewald components = 1.89145170870887, -52.7479366926688, 176.37664597779
+E1 = -455.37266897694644  E_coul = 175.5661747408693
+Extra cycle  E= -154.286333242248  delta_E= -4.5e-10  |g|= 1.4e-05  |ddm|= 5.44e-05
+    CPU time for scf_cycle    171.42 sec, wall time    171.41 sec
+    CPU time for SCF    171.42 sec, wall time    171.41 sec
+converged SCF energy = -154.286333242248
+
+WARN: PBC-TDDFT is an experimental feature. It is numerically sensitive to the accuracy of integrals (relating to cell.precision).
+
+
+
+******** <class 'pyscf.pbc.tdscf.krhf.TDHF'> for <class 'pyscf.pbc.scf.khf.KRHF'> ********
+nstates = 5 singlet
+wfnsym = None
+conv_tol = 1e-06
+eigh lindep = 1e-12
+eigh level_shift = 0
+eigh max_space = 50
+eigh max_cycle = 100
+chkfile = /tmp/tmpl191siip
+max_memory 4000 MB (current use 243 MB)
+
+
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.48 sec, wall time      0.48 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.04 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.53 sec, wall time      0.53 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+davidson 0 5  |r|= 0.38  e= [0.08121439 0.23909312 0.26770033 0.29788226 0.37091759]  max|de|= 0.371  lindep=    1
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.49 sec, wall time      0.48 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.04 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.54 sec, wall time      0.53 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    1     ->     0 
+    2     ->     1 
+    3     ->     2 
+    4     ->     3 
+davidson 1 10  |r|= 0.609  e= [0.22531868 0.22659333 0.28826055 0.28910952 0.32951215]  max|de|= -0.0818  lindep= 0.274
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.39 sec, wall time      0.39 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.03 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.44 sec, wall time      0.44 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    0     ->     2 
+    2     ->     3 
+    1     ->     4 
+davidson 2 14  |r|= 0.701  e= [0.22670697 0.26071373 0.28458528 0.2893357  0.29249827]  max|de|= 0.0659  lindep= 0.461
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.39 sec, wall time      0.39 sec
+    CPU time for get_j pass 1      0.03 sec, wall time      0.03 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.44 sec, wall time      0.43 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    3     ->     2 
+    2     ->     3 
+    1     ->     4 
+davidson 3 18  |r|= 1.08  e= [0.22456795 0.26081142 0.28961428 0.29044552 0.33493803]  max|de|= 0.0742  lindep= 0.127
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.39 sec, wall time      0.39 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.03 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.44 sec, wall time      0.44 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    4     ->     0 
+    0     ->     1 
+    0     ->     2 
+    4     ->     3 
+    2     ->     4 
+davidson 4 22  |r|= 1.12  e= [0.00262529 0.22188989 0.23878567 0.26080733 0.28954989]  max|de|= -0.332  lindep= 0.163
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.39 sec, wall time      0.39 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.03 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.44 sec, wall time      0.43 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    4     ->     0 
+    2     ->     1 
+    1     ->     2 
+    0     ->     3 
+davidson 5 26  |r|= 0.838  e= [0.19272117 0.193527   0.22411639 0.2608167  0.28956116]  max|de|= 0.258  lindep= 0.13
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.48 sec, wall time      0.48 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.04 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.54 sec, wall time      0.53 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    0     ->     1 
+    2     ->     3 
+    3     ->     4 
+davidson 6 31  |r|= 1.77  e= [0.08985898 0.16914831 0.22142696 0.22720483 0.26082656]  max|de|= -0.103  lindep= 0.129
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.39 sec, wall time      0.39 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.03 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.44 sec, wall time      0.44 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    2     ->     0 
+    2     ->     1 
+    3     ->     2 
+    1     ->     3 
+    1     ->     4 
+davidson 7 35  |r|= 1.03  e= [0.21360015 0.22337391 0.22986679 0.26082656 0.2895353 ]  max|de|= 0.12  lindep= 0.347
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.48 sec, wall time      0.48 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.04 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.54 sec, wall time      0.53 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    4     ->     0 
+    1     ->     2 
+    2     ->     3 
+    3     ->     4 
+davidson 8 40  |r|= 1.41  e= [0.17568243 0.22030139 0.22546064 0.22998268 0.26082477]  max|de|= -0.114  lindep= 0.131
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.48 sec, wall time      0.48 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.04 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.54 sec, wall time      0.53 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    4     ->     0 
+    0     ->     3 
+root 4 converged  |r|= 7.73e-17  e= 0.2608247429100922  max|de|= -2.26e-08
+davidson 9 45  |r|= 1.88  e= [0.1382413  0.22143695 0.22731141 0.22986247 0.26082474]  max|de|= -0.123  lindep= 0.101
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.39 sec, wall time      0.39 sec
+    CPU time for get_j pass 1      0.03 sec, wall time      0.03 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.44 sec, wall time      0.44 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    1     ->     2 
+    2     ->     3 
+    0     ->     4 
+davidson 10 49  |r|= 2.33  e= [0.09933072 0.16236947 0.22131953 0.22720746 0.2608252 ]  max|de|= 0.123  lindep= 0.0371
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.48 sec, wall time      0.48 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.04 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.54 sec, wall time      0.53 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    1     ->     0 
+    2     ->     1 
+    3     ->     2 
+    4     ->     3 
+    1     ->     4 
+root 3 converged  |r|= 3.38e-05  e= 0.2608243183517434  max|de|= -8.77e-07
+davidson 11 54  |r|= 1.66  e= [0.0378221  0.22138121 0.22721904 0.26082432 0.2682792 ]  max|de|= -0.125  lindep= 0.155
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.39 sec, wall time      0.39 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.03 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.44 sec, wall time      0.44 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+davidson 12 58  |r|= 2.31  e= [0.07337104 0.22138707 0.2272241  0.26082432 0.26901818]  max|de|= 0.0355  lindep= 0.0449
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.39 sec, wall time      0.39 sec
+    CPU time for get_j pass 1      0.03 sec, wall time      0.03 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.44 sec, wall time      0.43 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    1     ->     0 
+    2     ->     1 
+    3     ->     2 
+    4     ->     3 
+    0     ->     4 
+davidson 13 62  |r|= 0.0189  e= [0.22138214 0.22722101 0.26082432 0.2685243  0.28953613]  max|de|= 0.216  lindep= 0.309
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.49 sec, wall time      0.49 sec
+    CPU time for get_j pass 1      0.04 sec, wall time      0.04 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.54 sec, wall time      0.54 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+root 0 converged  |r|= 0.000605  e= 0.22138213968699216  max|de|= -1.39e-16
+root 1 converged  |r|= 0.000937  e= 0.2272210147531759  max|de|= -1.08e-15
+root 4 converged  |r|= 4.47e-05  e= 0.2895361257059393  max|de|= 1.67e-16
+davidson 14 5  |r|= 0.0189  e= [0.22138214 0.22722101 0.26082432 0.2685243  0.28953613]  max|de|= 4.11e-15  lindep=    1
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    0     ->     1 
+    1     ->     2 
+    2     ->     3 
+    3     ->     4 
+davidson 15 6  |r|= 4.09  e= [0.08805743 0.22138191 0.22722084 0.26082432 0.26852324]  max|de|= -0.133  lindep= 0.169
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.21 sec, wall time      0.20 sec
+    CPU time for get_j pass 1      0.03 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.24 sec, wall time      0.24 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    1     ->     0 
+    2     ->     1 
+    3     ->     2 
+    4     ->     3 
+    0     ->     4 
+davidson 16 8  |r|= 0.00233  e= [0.22138141 0.22722051 0.26082432 0.26851595 0.28953613]  max|de|= 0.201  lindep= 0.427
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.20 sec, wall time      0.20 sec
+    CPU time for get_j pass 1      0.03 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.24 sec, wall time      0.23 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+root 4 converged  |r|= 3.08e-05  e= 0.28953555135037556  max|de|= -5.74e-07
+davidson 17 10  |r|= 0.000312  e= [0.22138129 0.22722046 0.26082432 0.26851142 0.28953555]  max|de|= -4.53e-06  lindep= 0.791
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+davidson 18 11  |r|= 0.000176  e= [0.22138125 0.22722045 0.26082432 0.26850987 0.28953555]  max|de|= -1.55e-06  lindep= 0.604
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    1     ->     0 
+    0     ->     1 
+    1     ->     2 
+    2     ->     3 
+    3     ->     4 
+root 4 converged  |r|= 8.96e-05  e= 0.2685102284721343  max|de|= 3.6e-07
+davidson 19 12  |r|= 1.67  e= [0.16428611 0.2213813  0.22722024 0.26082432 0.26851023]  max|de|= -0.0629  lindep= 0.197
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    1     ->     0 
+    2     ->     1 
+    3     ->     2 
+    4     ->     3 
+    0     ->     4 
+davidson 20 13  |r|= 5.79e-05  e= [0.22138146 0.22722059 0.26082432 0.26851028 0.28953555]  max|de|= 0.125  lindep= 0.709
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.13 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    4     ->     0 
+    0     ->     1 
+    1     ->     2 
+    2     ->     3 
+    3     ->     4 
+davidson 21 14  |r|= 1.25  e= [0.20199448 0.22138146 0.22722059 0.26082432 0.26851028]  max|de|= -0.0875  lindep= 0.138
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+Old state -> New state
+    1     ->     0 
+    2     ->     1 
+    3     ->     2 
+    4     ->     3 
+    0     ->     4 
+davidson 22 15  |r|= 5.79e-05  e= [0.22138146 0.22722059 0.26082432 0.26851028 0.28953592]  max|de|= 0.0875  lindep= 0.189
+    CPU time for get_k_kpts: make_kpt ki>=kj (0,*)      0.11 sec, wall time      0.11 sec
+    CPU time for get_j pass 1      0.02 sec, wall time      0.02 sec
+    CPU time for get_j pass 2      0.01 sec, wall time      0.01 sec
+    CPU time for vj and vk      0.14 sec, wall time      0.14 sec
+Remove imaginary part of the Krylov space effective Hamiltonian
+root 4 converged  |r|= 2.49e-06  e= 0.2895358214841997  max|de|= -9.92e-08
+converged 23 16  |r|= 5.79e-05  e= [0.22138146 0.22722059 0.26082432 0.26851028 0.28953582]  max|de|= -9.92e-08
+[0.22138146 0.22722059 0.26082432 0.26851028 0.28953582]

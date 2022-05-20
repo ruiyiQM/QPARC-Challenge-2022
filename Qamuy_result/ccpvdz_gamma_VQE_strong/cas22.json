@@ -1,0 +1,10 @@
+{
+  "id": "JB01G3CC600RN9SR8VCQRR5F07RD",
+  "job_input": {
+    "json_serialized": "{\"solver\": {\"type\": \"VQE\"}, \"cost_function\": {\"type\": \"SIMPLE\", \"s2_number_weight\": 100.0, \"sz_number_weight\": 100.0, \"particle_number_weight\": 100.0}, \"ansatz\": {\"type\": \"HARDWARE_EFFICIENT\", \"is_state_real\": true, \"reference_state\": \"RHF\", \"trotter_steps\": 4, \"use_random_initial_guess\": true, \"randomness_variance\": 0.25, \"randomness_type\": \"GAUSSIAN\", \"depth\": 6, \"init_param_random_seed\": 1, \"entanglement_pattern\": \"LINEAR\", \"spin_state_list\": []}, \"optimizer\": {\"type\": \"BFGS\", \"gtol\": 1e-06, \"differential_type\": \"UNKNOWN\"}, \"quantum_device\": {\"type\": \"EXACT_SIMULATOR\", \"mitigation\": []}, \"target_periodic_system\": {\"geometry\": {\"atoms\": [\"C\", \"C\", \"H\", \"H\", \"C\", \"C\", \"H\", \"H\"], \"coordinates\": [[[-0.617, -0.32662, 0.0], [0.617, 0.32662, 0.0], [0.617, 1.40362, 0.0], [-0.617, -1.40362, 0.0], [1.852, -0.32662, 0.0], [3.086, 0.32662, 0.0], [3.086, 1.40362, 0.0], [1.852, -1.40362, 0.0]]], \"trans_vector\": [[4.938, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, 0.0, 10.0]], \"kpt_grid_shape\": [1.0, 1.0, 1.0], \"dimension\": 1}, \"cas\": {\"active_ele\": 2, \"active_orb\": 2, \"cas_list\": []}, \"basis\": \"ccpvdz\", \"multiplicity\": 3, \"num_excited_states\": 0, \"cas_for_each_k\": [], \"cart_basis\": false, \"ecp\": [], \"atom_specific_basis\": []}, \"output_chemical_properties\": [], \"output_solver_properties\": [], \"post_hf_methods\": []}"
+  },
+  "result": {
+    "json_serialized": ""
+  },
+  "status": "RUNNING"
+}

@@ -1,0 +1,57 @@
+Traceback (most recent call last):
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/connection.py", line 169, in _new_conn
+    conn = connection.create_connection(
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/util/connection.py", line 96, in create_connection
+    raise err
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/util/connection.py", line 86, in create_connection
+    sock.connect(sa)
+OSError: [Errno 101] Network is unreachable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/connectionpool.py", line 699, in urlopen
+    httplib_response = self._make_request(
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/connectionpool.py", line 382, in _make_request
+    self._validate_conn(conn)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/connectionpool.py", line 1010, in _validate_conn
+    conn.connect()
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/connection.py", line 353, in connect
+    conn = self._new_conn()
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/connection.py", line 181, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPSConnection object at 0x2ab7fba88850>: Failed to establish a new connection: [Errno 101] Network is unreachable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/connectionpool.py", line 755, in urlopen
+    retries = retries.increment(
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/urllib3/util/retry.py", line 574, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='www.googleapis.com', port=443): Max retries exceeded with url: /identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyD5eD1JUnCwGcgNd2667ENgZ78kYoRlS98 (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x2ab7fba88850>: Failed to establish a new connection: [Errno 101] Network is unreachable'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/nas/longleaf/home/ryzhou/Qamuy/ccpvdz_gamma_VQE_strong/test_sto_two_gamma_cas22.py", line 9, in <module>
+    client = Client(email_address="ryzhou@live.unc.edu", password="rEKv3012")
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/qamuy/client/client.py", line 67, in __init__
+    auth.login(email_address, password)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/qamuy/client/auth.py", line 33, in login
+    user = self._firebase_auth.sign_in_with_email_and_password(
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/pyrebase/pyrebase.py", line 84, in sign_in_with_email_and_password
+    request_object = requests.post(request_ref, headers=headers, data=data)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/requests/api.py", line 119, in post
+    return request('post', url, data=data, json=json, **kwargs)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/requests/api.py", line 61, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/requests/sessions.py", line 542, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/requests/sessions.py", line 655, in send
+    r = adapter.send(request, **kwargs)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/requests/adapters.py", line 516, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='www.googleapis.com', port=443): Max retries exceeded with url: /identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyD5eD1JUnCwGcgNd2667ENgZ78kYoRlS98 (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x2ab7fba88850>: Failed to establish a new connection: [Errno 101] Network is unreachable'))

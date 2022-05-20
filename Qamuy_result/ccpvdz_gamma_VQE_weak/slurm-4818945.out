@@ -1,0 +1,2 @@
+[Parallel(n_jobs=-1)]: Using backend ThreadingBackend with 44 concurrent workers.
+slurmstepd: error: *** JOB 4818945 ON c-206-1 CANCELLED AT 2022-05-17T12:33:52 ***

@@ -1,0 +1,77 @@
+{
+  "target_molecule": {
+      "geometry": {
+        "atoms":  ["H", "H"],
+        "coordinates": [
+          [0, 0, 0], [0, 0, 0.7]
+        ],
+        "geometry_format": "CARTESIAN"
+      },
+      "basis": "sto-3g",
+      "charge": 0,
+      "multiplicity": 1,
+      "sz_number": 0,
+      "num_excited_states": 1
+  },
+  "output_chemical_properties": [
+      {
+        "dipole_moment": {
+          "parameters": [{"state": 0}]
+        }
+      },
+      {
+        "transition_dipole_moment": {
+          "parameters": [{"state_pair": [0, 1]}]
+        }
+      },
+      {
+        "gradient": {
+          "dx": 1e-6,
+          "parameters": [{"state": 0}],
+          "type": "HAMILTONIAN_NUMERICAL"
+        }
+      },
+      {
+        "hessian": {
+          "dx": 1e-6,
+          "parameters": [{"state": 0}]
+        }
+      }
+  ],
+  "solver": {
+    "type": "SSVQE"
+  },
+  "mapping": {
+    "type": "JORDAN_WIGNER"
+  },
+  "cost_function": {
+    "type": "SIMPLE",
+    "SSVQE_weights": [1, 4],
+    "s2_number_weight": 4.0,
+    "sz_number_weight": 4.0
+  },
+  "ansatz": {
+    "type": "SYMMETRY_PRESERVING",
+    "is_state_real": true,
+    "reference_state": "RHF",
+    "use_random_initial_guess": true,
+    "randomness_variance": 0.75,
+    "randomness_type": "GAUSSIAN",
+    "depth": 4
+  },
+  "optimizer": {
+    "type": "BFGS",
+    "ftol": 1e-06,
+    "gtol": 1e-06,
+    "max_iter": 100000,
+    "max_fev": 100000,
+    "max_run": 100000
+  },
+  "quantum_device": {
+  "type": "SAMPLING_SIMULATOR",
+  "sampling_random_seed": 1
+},
+  "post_hf_methods": [
+    {"type": "CASCI"}
+  ]
+}

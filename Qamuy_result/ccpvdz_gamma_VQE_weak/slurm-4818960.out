@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/nas/longleaf/home/ryzhou/Qamuy/ccpvdz_gamma_VQE/test_sto_two_gamma_cas22.py", line 57, in <module>
+    input.post_hf_method.type = "CASCI"
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/qamuy_data_model/model/wrapped_pb.py", line 142, in __getattr__
+    pb_value = getattr(self.__dict__["_pb"], key)
+AttributeError: post_hf_method

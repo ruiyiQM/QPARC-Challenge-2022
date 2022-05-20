@@ -1,0 +1,10 @@
+{
+  "id": "JB01G380WJBSJD4NTZZRF591E2Q6",
+  "job_input": {
+    "json_serialized": "{\"solver\": {\"type\": \"VQD\"}, \"cost_function\": {\"type\": \"SIMPLE\", \"s2_number_weight\": 10.0, \"sz_number_weight\": 10.0, \"particle_number_weight\": 10.0, \"overlap_weights\": [10.0]}, \"ansatz\": {\"type\": \"SYMMETRY_PRESERVING\", \"depth\": 4, \"reference_state\": \"UNKNOWN\", \"randomness_type\": \"NONE\", \"entanglement_pattern\": \"LINEAR\", \"spin_state_list\": []}, \"optimizer\": {\"type\": \"BFGS\", \"differential_type\": \"UNKNOWN\"}, \"target_molecule\": {\"geometry\": {\"atoms\": [\"H\", \"H\"], \"coordinates\": [[0.0, 0.0, -0.35], [0.0, 0.0, 0.35]], \"geometry_format\": \"CARTESIAN\"}, \"basis\": \"6-31g\", \"cas\": {\"active_ele\": 2, \"active_orb\": 2, \"cas_list\": []}, \"multiplicity\": 1, \"sz_number\": 0.0, \"num_excited_states\": 1, \"molecular_orbital_format\": \"NONE\", \"fcidump\": \"\", \"cart_basis\": false, \"ecp\": [], \"atom_specific_basis\": []}, \"output_chemical_properties\": [{\"dipole_moment\": {\"parameters\": [{\"state\": 0}, {\"state\": 1}]}}, {\"oscillator_strength\": {\"parameters\": [{\"state_pair\": [0, 1]}]}}], \"quantum_device\": {\"type\": \"EXACT_SIMULATOR\", \"mitigation\": []}, \"post_hf_methods\": [{\"type\": \"CASCI\", \"excited_state_type\": \"UNSPECIFIED\"}], \"output_solver_properties\": []}"
+  },
+  "result": {
+    "json_serialized": ""
+  },
+  "status": "RUNNING"
+}

@@ -1,0 +1,1562 @@
+#INFO: **** input file is /nas/longleaf/home/ryzhou/Qamuy/pyscf_result/CASCI/gamma.py ****
+#!/usr/bin/env python
+#
+# Author: Xiao Wang <xiaowang314159@gmail.com>
+#
+"""
+This example first runs a closed-shell periodic EOM-EE-CCSD with K-point
+sampling, a.k.a. EOM-EE-KRCCSD, for singlet excited states on one of the
+three provided systems.
+Then a molecular EOM-EE-RCCSD based on Gamma-point Hartree-Fock is done, where
+a supercell (unit cell with its nmp replicas) is used.
+Excitation energies from the two sets of calculations should match.
+"""
+
+import numpy as np
+from pyscf import gto, scf, cc
+from pyscf.cc import eom_rccsd as mol_eom_rccsd
+from pyscf.pbc import gto, scf, cc
+from pyscf.pbc.cc import eom_kccsd_rhf as eom_krccsd
+from pyscf.pbc.tools.pbc import super_cell
+from pyscf.cc.rccsd import RCCSD
+
+from pyscf import mcscf
+cell = gto.Cell()
+cell.verbose = 7
+cell.max_memory = 80000  # MB
+
+#
+# Helium crystal
+#
+cell.atom = '''
+C -0.58442   -0.32662  0.0    
+C  0.58442   0.32662   0.0    
+H  0.58442   1.40362   0.0    
+H -0.58442   -1.40362  0.0    
+C  1.8845799999999997       -0.32662  0.0    
+C  3.05342    0.32662  0.0    
+H  3.05342    1.40362  0.0    
+H  1.8845799999999997       -1.40362  0.0    
+'''
+#cell.basis = [[0, (1., 1.)], [0, (.5, 1.)]]
+cell.a = '''
+4.938000000, 0.0000000000, 0.00000000
+0.000000000, 10.000000000, 0.00000000
+0.000000000, 0.000000000, 10.000000000
+'''
+
+cell.basis = 'cc-pvdz'
+cell.build()
+
+nmp = [1,1,1]
+nroots_test = 1
+
+# Supercell
+scell = super_cell(cell, nmp)
+
+# Gamma-point RHF based on supercell
+mf = scf.RHF(scell, exxdiv=None).density_fit()
+erhf = mf.kernel()
+
+
+#mf = scf.addons.convert_to_ghf(mf)
+mycas = mcscf.CASCI(mf,2, 2)
+mycas.kernel()
+mycas.verbose = 4
+mycas.analyze()
+
+
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='dogwood-login1', release='3.10.0-514.el7.x86_64', version='#1 SMP Wed Oct 19 11:24:13 EDT 2016', machine='x86_64')  Threads 1
+Python 3.9.5 (default, Jun  4 2021, 12:28:51) 
+[GCC 7.5.0]
+numpy 1.21.2  scipy 1.7.1
+Date: Tue May 17 14:33:03 2022
+PySCF version 2.0.1
+PySCF path  /nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/pyscf
+
+[CONFIG] DEBUG = False
+[CONFIG] MAX_MEMORY = 4000
+[CONFIG] TMPDIR = .
+[CONFIG] UNIT = angstrom
+[CONFIG] VERBOSE = 3
+[CONFIG] conf_file = None
+[INPUT] verbose = 7
+[INPUT] max_memory = 80000 
+[INPUT] num. atoms = 8
+[INPUT] num. electrons = 28
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT]  1 C     -0.584420000000  -0.326620000000   0.000000000000 AA   -1.104393741718  -0.617222346805   0.000000000000 Bohr
+[INPUT]  2 C      0.584420000000   0.326620000000   0.000000000000 AA    1.104393741718   0.617222346805   0.000000000000 Bohr
+[INPUT]  3 H      0.584420000000   1.403620000000   0.000000000000 AA    1.104393741718   2.652457382962   0.000000000000 Bohr
+[INPUT]  4 H     -0.584420000000  -1.403620000000   0.000000000000 AA   -1.104393741718  -2.652457382962   0.000000000000 Bohr
+[INPUT]  5 C      1.884580000000  -0.326620000000   0.000000000000 AA    3.561340059833  -0.617222346805   0.000000000000 Bohr
+[INPUT]  6 C      3.053420000000   0.326620000000   0.000000000000 AA    5.770127543269   0.617222346805   0.000000000000 Bohr
+[INPUT]  7 H      3.053420000000   1.403620000000   0.000000000000 AA    5.770127543269   2.652457382962   0.000000000000 Bohr
+[INPUT]  8 H      1.884580000000  -1.403620000000   0.000000000000 AA    3.561340059833  -2.652457382962   0.000000000000 Bohr
+[INPUT] ---------------- BASIS SET ---------------- 
+[INPUT] l, kappa, [nprim/nctr], expnt,             c_1 c_2 ...
+[INPUT] H
+[INPUT] 0    0    [3    /1   ]  13.01             0.019685
+                                1.962             0.137977
+                                0.4446            0.478148
+[INPUT] 0    0    [1    /1   ]  0.122                1
+[INPUT] 1    0    [1    /1   ]  0.727                1
+[INPUT] C
+[INPUT] 0    0    [8    /2   ]  6665              0.000692 -0.000146
+                                1000              0.005329 -0.001154
+                                228               0.027077 -0.005725
+                                64.71             0.101718 -0.023312
+                                21.06             0.27474 -0.063955
+                                7.495             0.448564 -0.149981
+                                2.797             0.285074 -0.127262
+                                0.5215            0.015204 0.544529
+[INPUT] 0    0    [1    /1   ]  0.1596               1
+[INPUT] 1    0    [3    /1   ]  9.439             0.038109
+                                2.002             0.20948
+                                0.5456            0.508557
+[INPUT] 1    0    [1    /1   ]  0.1517               1
+[INPUT] 2    0    [1    /1   ]  0.55                 1
+
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+nuclear repulsion = 49.3757858150142
+number of shells = 32
+number of NR pGTOs = 132
+number of NR cGTOs = 76
+basis = cc-pvdz
+ecp = {}
+bas 0, expnt(s) = [6.665e+03 1.000e+03 2.280e+02 6.471e+01 2.106e+01 7.495e+00 2.797e+00
+ 5.215e-01]
+bas 1, expnt(s) = [0.1596]
+bas 2, expnt(s) = [9.439  2.002  0.5456]
+bas 3, expnt(s) = [0.1517]
+bas 4, expnt(s) = [0.55]
+bas 5, expnt(s) = [6.665e+03 1.000e+03 2.280e+02 6.471e+01 2.106e+01 7.495e+00 2.797e+00
+ 5.215e-01]
+bas 6, expnt(s) = [0.1596]
+bas 7, expnt(s) = [9.439  2.002  0.5456]
+bas 8, expnt(s) = [0.1517]
+bas 9, expnt(s) = [0.55]
+bas 10, expnt(s) = [13.01    1.962   0.4446]
+bas 11, expnt(s) = [0.122]
+bas 12, expnt(s) = [0.727]
+bas 13, expnt(s) = [13.01    1.962   0.4446]
+bas 14, expnt(s) = [0.122]
+bas 15, expnt(s) = [0.727]
+bas 16, expnt(s) = [6.665e+03 1.000e+03 2.280e+02 6.471e+01 2.106e+01 7.495e+00 2.797e+00
+ 5.215e-01]
+bas 17, expnt(s) = [0.1596]
+bas 18, expnt(s) = [9.439  2.002  0.5456]
+bas 19, expnt(s) = [0.1517]
+bas 20, expnt(s) = [0.55]
+bas 21, expnt(s) = [6.665e+03 1.000e+03 2.280e+02 6.471e+01 2.106e+01 7.495e+00 2.797e+00
+ 5.215e-01]
+bas 22, expnt(s) = [0.1596]
+bas 23, expnt(s) = [9.439  2.002  0.5456]
+bas 24, expnt(s) = [0.1517]
+bas 25, expnt(s) = [0.55]
+bas 26, expnt(s) = [13.01    1.962   0.4446]
+bas 27, expnt(s) = [0.122]
+bas 28, expnt(s) = [0.727]
+bas 29, expnt(s) = [13.01    1.962   0.4446]
+bas 30, expnt(s) = [0.122]
+bas 31, expnt(s) = [0.727]
+CPU time:         0.99
+lattice vectors  a1 [9.331467603, 0.000000000, 0.000000000]
+                 a2 [0.000000000, 18.897261246, 0.000000000]
+                 a3 [0.000000000, 0.000000000, 18.897261246]
+dimension = 3
+low_dim_ft_type = None
+Cell volume = 3332.33
+rcut = 20.089801000471617 (nimgs = [3 2 2])
+lattice sum = 112 cells
+precision = 1e-08
+pseudo = None
+ke_cutoff = 98708.05082920736
+    = [1320 2673 2673] mesh (9431306280 PWs)
+
+
+******** <class 'pyscf.pbc.scf.hf.RHF'> ********
+method = RHF-SCF-RHF
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+SCF conv_tol = 1e-07
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /nas/longleaf/home/ryzhou/Qamuy/pyscf_result/CASCI/tmphmnc0y_a
+max_memory 80000 MB (current use 114 MB)
+******** PBC SCF flags ********
+kpt = [0. 0. 0.]
+Exchange divergence treatment (exxdiv) = None
+DF object = <pyscf.pbc.df.df.GDF object at 0x7f3103f75250>
+Set gradient conv threshold to 0.000316228
+Nelec from initial guess = 28.010749080161133
+Big error detected in the electron number of initial guess density matrix (Ne/cell = 28.0107)!
+  This can cause huge error in Fock matrix and lead to instability in SCF for low-dimensional systems.
+  DM is normalized wrt the number of electrons 28
+    CPU time for vnuc pass1: analytic int     13.99 sec, wall time     14.00 sec
+    CPU time for contracting Vnuc [0:10206]     20.47 sec, wall time     20.47 sec
+    CPU time for contracting Vnuc     20.47 sec, wall time     20.47 sec
+    CPU time for get_nuc     34.46 sec, wall time     34.47 sec
+Building PBC AO integrals incore
+
+
+******** <class 'pyscf.pbc.df.df.GDF'> ********
+mesh = [15, 27, 27] (10935 PWs)
+auxbasis = None
+eta = 0.2
+exp_to_discard = None
+_cderi_to_save = /nas/longleaf/home/ryzhou/Qamuy/pyscf_result/CASCI/tmpdr5scwaf
+len(kpts) = 1
+    kpts = [[0. 0. 0.]]
+Default auxbasis cc-pvdz-jkfit is used for H cc-pvdz
+Default auxbasis cc-pvdz-jkfit is used for C cc-pvdz
+num shells = 132, num cGTOs = 372
+Drop 0 primitive fitting functions
+make aux basis, num shells = 132, num cGTOs = 372
+auxcell.rcut 13.893106626891408
+make compensating basis, num shells = 28, num cGTOs = 100
+chgcell.rcut 11.482117703874595
+    CPU time for 3c2e    167.59 sec, wall time    167.61 sec
+Num uniq kpts 1
+uniq_kpts [[0. 0. 0.]]
+max_memory 79873.662976 (MB)  blocksize 5288245
+Cholesky decomposition for j2c at kpt 0
+Symmetry pattern (k - [0. 0. 0.])*a= 2n pi
+    make_kpt for uniq_kptji_ids [0]
+kpt = [0. 0. 0.]
+adapted_ji_idx = [0]
+memory = 147.079168
+int3c2e [1/1], AO [0:32], ncol = 2926
+Symmetry pattern (k + [0. 0. 0.])*a= 2n pi
+    make_kpt for [0]
+    CPU time for j3c    191.02 sec, wall time    191.08 sec
+    CPU time for vj and vk    191.30 sec, wall time    191.36 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -302.6179854670734  E_coul = 100.61467246936452
+init E= -152.627527182695
+cond(S) = 3783.271487222006
+    CPU time for initialize scf    226.28 sec, wall time    226.35 sec
+  HOMO = -0.0458057721485218  LUMO = 0.0100777734348349
+  mo_energy =
+[-1.11343808e+01 -1.11310798e+01 -1.11298435e+01 -1.11282390e+01
+ -1.25860012e+00 -9.01099486e-01 -8.20831399e-01 -6.43105097e-01
+ -3.85846472e-01 -3.67147063e-01 -2.99745035e-01 -2.83403145e-01
+ -2.31146784e-01 -4.58057721e-02  1.00777734e-02  1.85559470e-01
+  2.22322779e-01  2.54637384e-01  3.22122463e-01  3.32486844e-01
+  3.37675633e-01  4.52133459e-01  4.55641977e-01  6.17260322e-01
+  6.52937734e-01  6.89635020e-01  7.13276369e-01  7.38027230e-01
+  7.41029617e-01  7.86893728e-01  8.36818601e-01  8.53083026e-01
+  8.94935443e-01  8.95085353e-01  9.58795489e-01  9.84817306e-01
+  1.12593149e+00  1.16617031e+00  1.16970441e+00  1.22215573e+00
+  1.22609353e+00  1.23161429e+00  1.24714778e+00  1.26451617e+00
+  1.31644003e+00  1.33271036e+00  1.35101709e+00  1.52890365e+00
+  1.60109363e+00  1.66689123e+00  1.76764051e+00  1.77668444e+00
+  1.85770236e+00  1.86442568e+00  1.88288464e+00  1.92530667e+00
+  1.94613883e+00  2.05053222e+00  2.05315058e+00  2.11536591e+00
+  2.25076189e+00  2.29000701e+00  2.29017934e+00  2.30953827e+00
+  2.41732525e+00  2.42397696e+00  2.48659071e+00  2.51329746e+00
+  2.63258573e+00  2.64501617e+00  2.65682775e+00  2.68308842e+00
+  3.01310722e+00  3.34833892e+00  3.37662873e+00  3.41117249e+00]
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -303.75531187241756  E_coul = 102.84867503683287
+cycle= 1 E= -151.53085102057  delta_E=  1.1  |g|= 0.289  |ddm|= 2.87
+    CPU time for cycle= 1      0.45 sec, wall time      0.45 sec
+diis-norm(errvec)=0.672235
+diis-c [-0.45190007  1.        ]
+  HOMO = -0.0954598518414161  LUMO = 0.113896055683155
+  mo_energy =
+[-11.04599531 -11.04528931 -11.0439662  -11.04311727  -0.94282622
+  -0.75806369  -0.70936807  -0.59209582  -0.41656384  -0.40923637
+  -0.35105805  -0.2980423   -0.29058819  -0.09545985   0.11389606
+   0.19836548   0.25310696   0.27981748   0.35852309   0.36901845
+   0.45845001   0.46097701   0.46250678   0.67242164   0.69124692
+   0.72841506   0.77417569   0.78432369   0.80361301   0.83373671
+   0.87643751   0.9024824    0.92998254   0.94008703   1.02731516
+   1.04435097   1.15989914   1.21555676   1.21696404   1.25166876
+   1.25888471   1.25906391   1.30742736   1.30889026   1.35241727
+   1.36793775   1.38385386   1.57608679   1.64983966   1.71556119
+   1.81635027   1.82846973   1.8940882    1.90108948   1.92151234
+   1.94973618   1.99936222   2.0819178    2.08857437   2.17111112
+   2.28897135   2.31870162   2.34377327   2.36054144   2.46698048
+   2.47640934   2.55170578   2.55814596   2.6841058    2.6888263
+   2.71119344   2.72249552   3.06296959   3.40627717   3.42802167
+   3.47998641]
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -303.8107835281821  E_coul = 102.87448261574961
+cycle= 2 E= -151.560515097418  delta_E= -0.0297  |g|= 0.0524  |ddm|= 0.432
+    CPU time for cycle= 2      0.45 sec, wall time      0.45 sec
+diis-norm(errvec)=0.121848
+diis-c [-0.00434319 -0.18091119  1.18091119]
+  HOMO = -0.0964580467532347  LUMO = 0.118271370048033
+  mo_energy =
+[-11.04553101 -11.04479627 -11.04304987 -11.04221571  -0.93671898
+  -0.75614882  -0.7037714   -0.58477707  -0.41636681  -0.41050656
+  -0.35743701  -0.30160735  -0.29018591  -0.09645805   0.11827137
+   0.20584719   0.25543379   0.28353104   0.36707172   0.37752556
+   0.4615885    0.4640585    0.46767818   0.67860164   0.69080661
+   0.7279083    0.77547182   0.78636501   0.81340812   0.83665611
+   0.87569635   0.90284017   0.93122945   0.94529334   1.03170004
+   1.04683812   1.16304787   1.21903704   1.22021984   1.25480584
+   1.26042423   1.26285653   1.30661476   1.31133391   1.36074059
+   1.37101611   1.39006151   1.57719517   1.65082931   1.71692158
+   1.82131232   1.83353749   1.90079105   1.90761211   1.92538639
+   1.9593439    2.00533808   2.0897878    2.09569865   2.17165019
+   2.29496228   2.32607785   2.34670493   2.36310863   2.46927403
+   2.47818911   2.55377609   2.56785698   2.69025405   2.69914294
+   2.71343232   2.73381552   3.07095426   3.41125394   3.43446889
+   3.48488672]
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -303.821029384814  E_coul = 102.88364822813884
+cycle= 3 E= -151.561595341661  delta_E= -0.00108  |g|= 0.0055  |ddm|= 0.0981
+    CPU time for cycle= 3      0.45 sec, wall time      0.45 sec
+diis-norm(errvec)=0.0125809
+diis-c [-1.07130726e-04 -1.73741670e-02  4.88479269e-02  9.68526240e-01]
+  HOMO = -0.0956595419631344  LUMO = 0.118718597661402
+  mo_energy =
+[-11.0453569  -11.04461758 -11.0428189  -11.0419831   -0.93602315
+  -0.75490772  -0.70380121  -0.58504452  -0.41680214  -0.41092493
+  -0.35688376  -0.30245621  -0.28956436  -0.09565954   0.1187186
+   0.20572035   0.25504022   0.28378217   0.36688516   0.37737943
+   0.46124487   0.46367644   0.46821297   0.67868981   0.69143108
+   0.72810299   0.77566288   0.78689409   0.81332097   0.8366583
+   0.87638717   0.90321609   0.9311271    0.94496746   1.03158016
+   1.04681151   1.16313963   1.21895204   1.22036009   1.2545564
+   1.26040057   1.26254179   1.30707048   1.31187764   1.36040136
+   1.37078695   1.38969623   1.57753336   1.65121292   1.71729104
+   1.82136872   1.83369881   1.90055154   1.9073922    1.9253181
+   1.9588804    2.00512579   2.08938188   2.09539055   2.17181816
+   2.29476177   2.32568324   2.34674044   2.36313475   2.46941797
+   2.47850397   2.55417135   2.56737618   2.68998283   2.69867014
+   2.71351382   2.73311258   3.07067276   3.41116354   3.43415031
+   3.48522369]
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -303.81027925060584  E_coul = 102.87289124925114
+cycle= 4 E= -151.56160218634  delta_E= -6.84e-06  |g|= 0.00348  |ddm|= 0.00883
+    CPU time for cycle= 4      0.45 sec, wall time      0.45 sec
+diis-norm(errvec)=0.00826252
+diis-c [-1.41409102e-05 -3.24164953e-03 -7.00871790e-03  4.25619637e-01
+  5.84630730e-01]
+  HOMO = -0.0957765184524055  LUMO = 0.118600317668605
+  mo_energy =
+[-11.04530274 -11.04458609 -11.04362235 -11.04276359  -0.93620395
+  -0.75508981  -0.70397677  -0.58516773  -0.41696922  -0.411082
+  -0.35707196  -0.30265227  -0.28967442  -0.09577652   0.11860032
+   0.20569192   0.25499085   0.2836979    0.36682063   0.37731119
+   0.46118686   0.46361348   0.46801244   0.67854792   0.69136044
+   0.72797163   0.77554094   0.78675797   0.81320209   0.83654488
+   0.87631904   0.90312075   0.93100762   0.94484945   1.03139116
+   1.04664707   1.16300867   1.21881456   1.22021802   1.25444988
+   1.26028667   1.26242098   1.30690922   1.31172286   1.36032468
+   1.37066652   1.38958365   1.57740954   1.65108905   1.71719595
+   1.82123446   1.83355473   1.90045183   1.9072897    1.9252097
+   1.95880604   2.00496126   2.08928128   2.0952855    2.17166261
+   2.29465297   2.32560203   2.34657275   2.3629768    2.46927713
+   2.47836953   2.55396231   2.56722752   2.68981456   2.69854052
+   2.71334833   2.73297927   3.07053778   3.41098149   3.43398126
+   3.4850367 ]
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -303.81302562801005  E_coul = 102.87563465387306
+cycle= 5 E= -151.561605159123  delta_E= -2.97e-06  |g|= 0.000728  |ddm|= 0.00352
+    CPU time for cycle= 5      0.45 sec, wall time      0.45 sec
+diis-norm(errvec)=0.00170553
+diis-c [-4.01475942e-07  1.96705880e-03 -9.76339031e-03 -4.47308309e-02
+  1.33687832e-01  9.18839330e-01]
+  HOMO = -0.0958263520472405  LUMO = 0.118560297041479
+  mo_energy =
+[-11.04544194 -11.04472693 -11.04380333 -11.04294274  -0.93629311
+  -0.75519377  -0.7040341   -0.58521261  -0.41704094  -0.41114312
+  -0.35714626  -0.3027375   -0.28971389  -0.09582635   0.1185603
+   0.20568733   0.25496618   0.28366646   0.36680337   0.37728416
+   0.46116116   0.46358701   0.46790893   0.67850611   0.69133891
+   0.72790988   0.77549637   0.78670458   0.81315089   0.83650062
+   0.87629472   0.90309066   0.93095627   0.94480427   1.03130732
+   1.04657997   1.1629602    1.21876492   1.22015812   1.25441434
+   1.26023457   1.26238047   1.30684518   1.31164432   1.36030323
+   1.37062301   1.38954795   1.57735905   1.651038     1.71715519
+   1.82118054   1.83349477   1.90041952   1.90725767   1.92517268
+   1.95878708   2.00489276   2.08925017   2.09525048   2.17160286
+   2.29461542   2.3255791    2.34650476   2.36291677   2.46922326
+   2.47831383   2.5538698    2.56717391   2.68974808   2.69849227
+   2.71328126   2.73293995   3.07049125   3.41090482   3.43391944
+   3.48495923]
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -303.8144824448036  E_coul = 102.87709132137294
+cycle= 6 E= -151.561605308416  delta_E= -1.49e-07  |g|= 0.000118  |ddm|= 0.000857
+    CPU time for cycle= 6      0.45 sec, wall time      0.45 sec
+diis-norm(errvec)=0.000259819
+diis-c [-1.92831043e-08  4.65714216e-04 -1.58577766e-03 -2.37819571e-02
+  1.27582706e-02  2.17249335e-01  7.94894415e-01]
+  HOMO = -0.0957811620478327  LUMO = 0.118603839897725
+  mo_energy =
+[-11.04534286 -11.04462782 -11.04370432 -11.04284367  -0.93624232
+  -0.75513992  -0.70398144  -0.58518161  -0.41700655  -0.41110684
+  -0.35708262  -0.30270539  -0.28966959  -0.09578116   0.11860384
+   0.20569674   0.25496937   0.28369489   0.36682263   0.3773001
+   0.46116925   0.46359636   0.4679578    0.67855534   0.69137394
+   0.72794344   0.77553608   0.78675206   0.81317912   0.83653217
+   0.87632747   0.90312754   0.93098471   0.94483155   1.0313506
+   1.04662322   1.163        1.21880397   1.22019669   1.25444267
+   1.2602633    1.26241029   1.3068968    1.31168647   1.36032365
+   1.37065445   1.38957749   1.57739825   1.65107771   1.71718579
+   1.82121793   1.83353563   1.90044707   1.90728721   1.92520445
+   1.95880551   2.00493222   2.08927549   2.0952777    2.17164904
+   2.2946451    2.32560008   2.3465504    2.36296171   2.46926508
+   2.47835495   2.55392854   2.56720949   2.68978939   2.69852251
+   2.71332611   2.73297098   3.07052738   3.41095061   3.43396264
+   3.48501408]
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -303.8137746531893  E_coul = 102.876383525565
+cycle= 7 E= -151.56160531261  delta_E= -4.19e-09  |g|= 1.5e-05  |ddm|= 0.000148
+    CPU time for cycle= 7      0.44 sec, wall time      0.45 sec
+  HOMO = -0.095785266374549  LUMO = 0.118598917277353
+  mo_energy =
+[-11.04535317 -11.04463814 -11.04371466 -11.04285401  -0.93624831
+  -0.75514516  -0.70398812  -0.58518427  -0.41701097  -0.4111101
+  -0.35708759  -0.30271031  -0.2896737   -0.09578527   0.11859892
+   0.20569672   0.25496919   0.28369208   0.36682196   0.37729957
+   0.46116887   0.46359584   0.46795173   0.67855129   0.69137053
+   0.7279394    0.77553282   0.78674726   0.8131777    0.83652969
+   0.87632444   0.90312347   0.93098165   0.94482916   1.03134602
+   1.04661936   1.16299625   1.21880053   1.22019229   1.25443997
+   1.26026049   1.26240813   1.30689081   1.31168262   1.36032318
+   1.37065216   1.38957566   1.57739445   1.65107369   1.71718241
+   1.82121497   1.83353219   1.90044563   1.90728524   1.92520173
+   1.9588056    2.00492923   2.08927414   2.09527624   2.17164386
+   2.29464315   2.3255994    2.34654623   2.3629573    2.46926077
+   2.47835113   2.55392292   2.56720769   2.68978574   2.69852165
+   2.71332179   2.7329694    3.07052507   3.41094683   3.43395894
+   3.48500895]
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+E1 = -303.8138746450852  E_coul = 102.87648351739055
+Extra cycle  E= -151.56160531268  delta_E= -7.04e-11  |g|= 5.58e-06  |ddm|= 2.2e-05
+    CPU time for scf_cycle    229.83 sec, wall time    229.96 sec
+    CPU time for SCF    229.83 sec, wall time    229.96 sec
+converged SCF energy = -151.56160531268
+
+******** CASCI flags ********
+CAS (1e+1e, 2o), ncore = 13, nvir = 61
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+max_memory 80000 (MB)
+******** <class 'pyscf.fci.direct_spin1.FCISolver'> ********
+max. cycles = 200
+conv_tol = 1e-08
+davidson only = False
+linear dependence = 1e-10
+level shift = 0.001
+max iter space = 12
+max_memory 80000 MB
+nroots = 1
+pspace_size = 400
+spin = None
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+Start CASCI
+    CPU time for integral transformation to CAS space      0.01 sec, wall time      0.01 sec
+    CPU time for vnuc pass1: analytic int     14.26 sec, wall time     14.26 sec
+    CPU time for contracting Vnuc [0:10206]     20.47 sec, wall time     20.48 sec
+    CPU time for contracting Vnuc     20.47 sec, wall time     20.48 sec
+    CPU time for get_nuc     34.74 sec, wall time     34.74 sec
+Ewald components = 0.00223450701253216, -108.84877667315, 158.222327981152
+max_memory = 39871 MB (256 in use)
+    CPU time for         load      0.03 sec, wall time      0.03 sec
+    CPU time for         with_j      0.01 sec, wall time      0.00 sec
+    CPU time for         with_k      0.01 sec, wall time      0.02 sec
+    CPU time for         load      0.00 sec, wall time      0.00 sec
+    CPU time for         with_j      0.02 sec, wall time      0.02 sec
+    CPU time for         with_k      0.00 sec, wall time      0.00 sec
+    CPU time for sr jk      0.01 sec, wall time      0.01 sec
+core energy = -151.135364410901
+    CPU time for effective h1e in CAS space     35.23 sec, wall time     35.23 sec
+    CPU time for FCI solver      0.00 sec, wall time      0.00 sec
+    CPU time for vj and vk      0.04 sec, wall time      0.04 sec
+    CPU time for vnuc pass1: analytic int     14.00 sec, wall time     14.00 sec
+    CPU time for contracting Vnuc [0:10206]     20.43 sec, wall time     20.44 sec
+    CPU time for contracting Vnuc     20.43 sec, wall time     20.44 sec
+    CPU time for get_nuc     34.44 sec, wall time     34.44 sec
+Density matrix diagonal elements [1.82486395 0.17513605]
+i = 1  <i|F|i> = -11.04874464
+i = 2  <i|F|i> = -11.04800730
+i = 3  <i|F|i> = -11.04713260
+i = 4  <i|F|i> = -11.04625112
+i = 5  <i|F|i> =  -0.93822686
+i = 6  <i|F|i> =  -0.75792776
+i = 7  <i|F|i> =  -0.70497098
+i = 8  <i|F|i> =  -0.58629072
+i = 9  <i|F|i> =  -0.41847645
+i = 10  <i|F|i> =  -0.41234623
+i = 11  <i|F|i> =  -0.35994931
+i = 12  <i|F|i> =  -0.30319511
+i = 13  <i|F|i> =  -0.29042111
+i = 14  <i|F|i> =  -0.08276804
+i = 15  <i|F|i> =   0.10385647
+i = 16  <i|F|i> =   0.20530349
+i = 17  <i|F|i> =   0.25464197
+i = 18  <i|F|i> =   0.28270463
+i = 19  <i|F|i> =   0.36662166
+i = 20  <i|F|i> =   0.37649242
+i = 21  <i|F|i> =   0.46054936
+i = 22  <i|F|i> =   0.46341923
+i = 23  <i|F|i> =   0.46627186
+i = 24  <i|F|i> =   0.67751956
+i = 25  <i|F|i> =   0.69060113
+i = 26  <i|F|i> =   0.72670198
+i = 27  <i|F|i> =   0.77571169
+i = 28  <i|F|i> =   0.78533401
+i = 29  <i|F|i> =   0.81182035
+i = 30  <i|F|i> =   0.83379402
+i = 31  <i|F|i> =   0.87575280
+i = 32  <i|F|i> =   0.90159112
+i = 33  <i|F|i> =   0.92997406
+i = 34  <i|F|i> =   0.94389647
+i = 35  <i|F|i> =   1.02977328
+i = 36  <i|F|i> =   1.04493090
+i = 37  <i|F|i> =   1.16268668
+i = 38  <i|F|i> =   1.21634273
+i = 39  <i|F|i> =   1.21967969
+i = 40  <i|F|i> =   1.25394802
+i = 41  <i|F|i> =   1.25943321
+i = 42  <i|F|i> =   1.26146704
+i = 43  <i|F|i> =   1.30503073
+i = 44  <i|F|i> =   1.30896039
+i = 45  <i|F|i> =   1.35964830
+i = 46  <i|F|i> =   1.36973862
+i = 47  <i|F|i> =   1.38853034
+i = 48  <i|F|i> =   1.57610824
+i = 49  <i|F|i> =   1.64992484
+i = 50  <i|F|i> =   1.71612054
+i = 51  <i|F|i> =   1.81985465
+i = 52  <i|F|i> =   1.83213155
+i = 53  <i|F|i> =   1.89938670
+i = 54  <i|F|i> =   1.90649414
+i = 55  <i|F|i> =   1.92414603
+i = 56  <i|F|i> =   1.95810829
+i = 57  <i|F|i> =   2.00347248
+i = 58  <i|F|i> =   2.08860526
+i = 59  <i|F|i> =   2.09418434
+i = 60  <i|F|i> =   2.17037361
+i = 61  <i|F|i> =   2.29360106
+i = 62  <i|F|i> =   2.32488623
+i = 63  <i|F|i> =   2.34496880
+i = 64  <i|F|i> =   2.36169268
+i = 65  <i|F|i> =   2.46824528
+i = 66  <i|F|i> =   2.47669704
+i = 67  <i|F|i> =   2.55182239
+i = 68  <i|F|i> =   2.56589975
+i = 69  <i|F|i> =   2.68856108
+i = 70  <i|F|i> =   2.69697156
+i = 71  <i|F|i> =   2.71171095
+i = 72  <i|F|i> =   2.73240348
+i = 73  <i|F|i> =   3.06928005
+i = 74  <i|F|i> =   3.40916135
+i = 75  <i|F|i> =   3.43288563
+i = 76  <i|F|i> =   3.48339232
+CASCI converged
+CASCI E = -151.573470088844  E(CI) = -0.438105677943042  S^2 = 0.0000000
+Natural occ [1.82486395 0.17513605]
+Natural orbital (expansion on meta-Lowdin AOs) in CAS space
+               #1        #2       
+  0 C 1s      -0.00000  -0.00000
+  0 C 2s       0.00000  -0.00000
+  0 C 3s      -0.00000  -0.00000
+  0 C 2px      0.00000  -0.00000
+  0 C 2py     -0.00000   0.00000
+  0 C 2pz     -0.49487  -0.48773
+  0 C 3px      0.00000  -0.00000
+  0 C 3py     -0.00000   0.00000
+  0 C 3pz     -0.05741  -0.10102
+  0 C 3dxy     0.00000  -0.00000
+  0 C 3dyz    -0.01491  -0.00636
+  0 C 3dz^2   -0.00000   0.00000
+  0 C 3dxz    -0.03828   0.03862
+ 0 C 3dx2-y2  -0.00000   0.00000
+  1 C 1s      -0.00000   0.00000
+  1 C 2s       0.00000  -0.00000
+  1 C 3s      -0.00000   0.00000
+  1 C 2px     -0.00000  -0.00000
+  1 C 2py     -0.00000   0.00000
+  1 C 2pz     -0.49487   0.48773
+  1 C 3px     -0.00000   0.00000
+  1 C 3py      0.00000  -0.00000
+  1 C 3pz     -0.05741   0.10102
+  1 C 3dxy    -0.00000   0.00000
+  1 C 3dyz     0.01491  -0.00636
+  1 C 3dz^2   -0.00000  -0.00000
+  1 C 3dxz     0.03828   0.03862
+ 1 C 3dx2-y2  -0.00000  -0.00000
+  2 H 1s      -0.00000   0.00000
+  2 H 2s      -0.00000  -0.00000
+  2 H 2px     -0.00000  -0.00000
+  2 H 2py      0.00000   0.00000
+  2 H 2pz     -0.01091   0.01967
+  3 H 1s      -0.00000   0.00000
+  3 H 2s      -0.00000   0.00000
+  3 H 2px     -0.00000   0.00000
+  3 H 2py     -0.00000   0.00000
+  3 H 2pz     -0.01091  -0.01967
+  4 C 1s       0.00000   0.00000
+  4 C 2s       0.00000   0.00000
+  4 C 3s       0.00000  -0.00000
+  4 C 2px     -0.00000  -0.00000
+  4 C 2py      0.00000   0.00000
+  4 C 2pz      0.49487   0.48773
+  4 C 3px     -0.00000  -0.00000
+  4 C 3py      0.00000  -0.00000
+  4 C 3pz      0.05741   0.10102
+  4 C 3dxy     0.00000   0.00000
+  4 C 3dyz     0.01491   0.00636
+  4 C 3dz^2    0.00000   0.00000
+  4 C 3dxz     0.03828  -0.03862
+ 4 C 3dx2-y2  -0.00000  -0.00000
+  5 C 1s      -0.00000  -0.00000
+  5 C 2s      -0.00000  -0.00000
+  5 C 3s       0.00000  -0.00000
+  5 C 2px      0.00000   0.00000
+  5 C 2py     -0.00000   0.00000
+  5 C 2pz      0.49487  -0.48773
+  5 C 3px      0.00000  -0.00000
+  5 C 3py     -0.00000  -0.00000
+  5 C 3pz      0.05741  -0.10102
+  5 C 3dxy    -0.00000  -0.00000
+  5 C 3dyz    -0.01491   0.00636
+  5 C 3dz^2   -0.00000  -0.00000
+  5 C 3dxz    -0.03828  -0.03862
+ 5 C 3dx2-y2   0.00000  -0.00000
+  6 H 1s       0.00000  -0.00000
+  6 H 2s       0.00000   0.00000
+  6 H 2px     -0.00000   0.00000
+  6 H 2py     -0.00000  -0.00000
+  6 H 2pz      0.01091  -0.01967
+  7 H 1s      -0.00000   0.00000
+  7 H 2s       0.00000  -0.00000
+  7 H 2px      0.00000  -0.00000
+  7 H 2py      0.00000  -0.00000
+  7 H 2pz      0.01091   0.01967
+<mo_coeff-mcscf|mo_coeff-hf>  1  1    1.00016257
+<mo_coeff-mcscf|mo_coeff-hf>  2  2    0.99936575
+<mo_coeff-mcscf|mo_coeff-hf>  2  21    0.57103843
+<mo_coeff-mcscf|mo_coeff-hf>  2  39    0.54982334
+<mo_coeff-mcscf|mo_coeff-hf>  2  40    0.69041240
+<mo_coeff-mcscf|mo_coeff-hf>  2  46   -0.94858498
+<mo_coeff-mcscf|mo_coeff-hf>  2  62   -1.19231117
+<mo_coeff-mcscf|mo_coeff-hf>  2  64   -0.66741730
+<mo_coeff-mcscf|mo_coeff-hf>  2  71    0.53436670
+<mo_coeff-mcscf|mo_coeff-hf>  3  3    1.00009684
+<mo_coeff-mcscf|mo_coeff-hf>  4  4    0.99974836
+<mo_coeff-mcscf|mo_coeff-hf>  4  21   -0.40304328
+<mo_coeff-mcscf|mo_coeff-hf>  4  39   -0.40038015
+<mo_coeff-mcscf|mo_coeff-hf>  4  40   -0.50857000
+<mo_coeff-mcscf|mo_coeff-hf>  4  46    0.62739730
+<mo_coeff-mcscf|mo_coeff-hf>  4  62    0.79521630
+<mo_coeff-mcscf|mo_coeff-hf>  4  64    0.50501863
+<mo_coeff-mcscf|mo_coeff-hf>  4  71   -0.45535276
+<mo_coeff-mcscf|mo_coeff-hf>  5  5    0.87671112
+<mo_coeff-mcscf|mo_coeff-hf>  5  42   -0.45170210
+<mo_coeff-mcscf|mo_coeff-hf>  5  55   -0.64465989
+<mo_coeff-mcscf|mo_coeff-hf>  6  6    1.11839795
+<mo_coeff-mcscf|mo_coeff-hf>  6  19    0.91254070
+<mo_coeff-mcscf|mo_coeff-hf>  6  21   -2.95371761
+<mo_coeff-mcscf|mo_coeff-hf>  6  23   -0.84623324
+<mo_coeff-mcscf|mo_coeff-hf>  6  24    1.60316689
+<mo_coeff-mcscf|mo_coeff-hf>  6  27    0.53124899
+<mo_coeff-mcscf|mo_coeff-hf>  6  33   -0.49647035
+<mo_coeff-mcscf|mo_coeff-hf>  6  35   -0.76010100
+<mo_coeff-mcscf|mo_coeff-hf>  6  39   -2.72305149
+<mo_coeff-mcscf|mo_coeff-hf>  6  40   -3.38831765
+<mo_coeff-mcscf|mo_coeff-hf>  6  46    5.06882598
+<mo_coeff-mcscf|mo_coeff-hf>  6  50   -1.72614714
+<mo_coeff-mcscf|mo_coeff-hf>  6  58   -1.23960003
+<mo_coeff-mcscf|mo_coeff-hf>  6  62    6.32124711
+<mo_coeff-mcscf|mo_coeff-hf>  6  64    3.24691870
+<mo_coeff-mcscf|mo_coeff-hf>  6  70    1.08306123
+<mo_coeff-mcscf|mo_coeff-hf>  6  71   -2.55569664
+<mo_coeff-mcscf|mo_coeff-hf>  6  73    1.54057083
+<mo_coeff-mcscf|mo_coeff-hf>  6  75   -0.63779939
+<mo_coeff-mcscf|mo_coeff-hf>  7  7    0.83298795
+<mo_coeff-mcscf|mo_coeff-hf>  8  8    0.93325602
+<mo_coeff-mcscf|mo_coeff-hf>  8  21   -0.62331071
+<mo_coeff-mcscf|mo_coeff-hf>  8  39   -0.65712791
+<mo_coeff-mcscf|mo_coeff-hf>  8  40   -0.98452466
+<mo_coeff-mcscf|mo_coeff-hf>  8  46    0.93540986
+<mo_coeff-mcscf|mo_coeff-hf>  8  50   -0.64328340
+<mo_coeff-mcscf|mo_coeff-hf>  8  62    1.15760202
+<mo_coeff-mcscf|mo_coeff-hf>  8  64    0.75625414
+<mo_coeff-mcscf|mo_coeff-hf>  8  71   -0.79669105
+<mo_coeff-mcscf|mo_coeff-hf>  8  73    0.47252147
+<mo_coeff-mcscf|mo_coeff-hf>  9  9    1.05845342
+<mo_coeff-mcscf|mo_coeff-hf>  9  41    0.90481371
+<mo_coeff-mcscf|mo_coeff-hf>  9  45   -0.50130608
+<mo_coeff-mcscf|mo_coeff-hf>  9  49   -0.40067746
+<mo_coeff-mcscf|mo_coeff-hf>  10  10    1.01439149
+<mo_coeff-mcscf|mo_coeff-hf>  10  21   -1.39125657
+<mo_coeff-mcscf|mo_coeff-hf>  10  23   -0.49803737
+<mo_coeff-mcscf|mo_coeff-hf>  10  24    0.67936736
+<mo_coeff-mcscf|mo_coeff-hf>  10  39   -1.22223776
+<mo_coeff-mcscf|mo_coeff-hf>  10  40   -1.68476032
+<mo_coeff-mcscf|mo_coeff-hf>  10  46    2.36056776
+<mo_coeff-mcscf|mo_coeff-hf>  10  50   -0.93079954
+<mo_coeff-mcscf|mo_coeff-hf>  10  58   -0.51418731
+<mo_coeff-mcscf|mo_coeff-hf>  10  62    2.92347607
+<mo_coeff-mcscf|mo_coeff-hf>  10  64    1.45650019
+<mo_coeff-mcscf|mo_coeff-hf>  10  70    0.52643510
+<mo_coeff-mcscf|mo_coeff-hf>  10  71   -1.32647954
+<mo_coeff-mcscf|mo_coeff-hf>  10  73    0.79070474
+<mo_coeff-mcscf|mo_coeff-hf>  11  11    1.03364900
+<mo_coeff-mcscf|mo_coeff-hf>  11  22   -0.41508361
+<mo_coeff-mcscf|mo_coeff-hf>  11  41   -0.71989468
+<mo_coeff-mcscf|mo_coeff-hf>  11  42   -0.46592499
+<mo_coeff-mcscf|mo_coeff-hf>  11  55   -0.57634460
+<mo_coeff-mcscf|mo_coeff-hf>  12  12    0.94180029
+<mo_coeff-mcscf|mo_coeff-hf>  13  13    0.88405246
+<mo_coeff-mcscf|mo_coeff-hf>  14  14    1.24824842
+<mo_coeff-mcscf|mo_coeff-hf>  14  18    0.43240938
+<mo_coeff-mcscf|mo_coeff-hf>  14  31    0.41258313
+<mo_coeff-mcscf|mo_coeff-hf>  14  48   -0.41428264
+<mo_coeff-mcscf|mo_coeff-hf>  15  15    0.87286898
+<mo_coeff-mcscf|mo_coeff-hf>  16  16    0.87067155
+<mo_coeff-mcscf|mo_coeff-hf>  16  21   -0.92603193
+<mo_coeff-mcscf|mo_coeff-hf>  16  24    0.58231425
+<mo_coeff-mcscf|mo_coeff-hf>  16  39   -0.83906151
+<mo_coeff-mcscf|mo_coeff-hf>  16  40   -1.05309843
+<mo_coeff-mcscf|mo_coeff-hf>  16  46    1.75941507
+<mo_coeff-mcscf|mo_coeff-hf>  16  50   -0.66682703
+<mo_coeff-mcscf|mo_coeff-hf>  16  62    2.18984754
+<mo_coeff-mcscf|mo_coeff-hf>  16  64    1.08795210
+<mo_coeff-mcscf|mo_coeff-hf>  16  71   -0.96026164
+<mo_coeff-mcscf|mo_coeff-hf>  16  73    0.58623384
+<mo_coeff-mcscf|mo_coeff-hf>  17  17    1.09950502
+<mo_coeff-mcscf|mo_coeff-hf>  17  41   -0.99014098
+<mo_coeff-mcscf|mo_coeff-hf>  17  45    0.57168029
+<mo_coeff-mcscf|mo_coeff-hf>  17  49    0.57763048
+<mo_coeff-mcscf|mo_coeff-hf>  18  14    0.43168044
+<mo_coeff-mcscf|mo_coeff-hf>  18  18    1.51656853
+<mo_coeff-mcscf|mo_coeff-hf>  18  31    0.59173275
+<mo_coeff-mcscf|mo_coeff-hf>  18  48   -0.54821470
+<mo_coeff-mcscf|mo_coeff-hf>  19  6    0.92285234
+<mo_coeff-mcscf|mo_coeff-hf>  19  19    4.23974516
+<mo_coeff-mcscf|mo_coeff-hf>  19  21   -8.75161845
+<mo_coeff-mcscf|mo_coeff-hf>  19  23   -3.37352118
+<mo_coeff-mcscf|mo_coeff-hf>  19  24    4.75901645
+<mo_coeff-mcscf|mo_coeff-hf>  19  27    1.98740941
+<mo_coeff-mcscf|mo_coeff-hf>  19  33   -1.70643813
+<mo_coeff-mcscf|mo_coeff-hf>  19  35   -1.76724623
+<mo_coeff-mcscf|mo_coeff-hf>  19  39   -8.70547324
+<mo_coeff-mcscf|mo_coeff-hf>  19  40  -10.72753427
+<mo_coeff-mcscf|mo_coeff-hf>  19  46   15.00822614
+<mo_coeff-mcscf|mo_coeff-hf>  19  50   -6.39430931
+<mo_coeff-mcscf|mo_coeff-hf>  19  57    0.92032097
+<mo_coeff-mcscf|mo_coeff-hf>  19  58   -3.73920666
+<mo_coeff-mcscf|mo_coeff-hf>  19  62   19.06895677
+<mo_coeff-mcscf|mo_coeff-hf>  19  64   10.88144870
+<mo_coeff-mcscf|mo_coeff-hf>  19  67   -1.67943541
+<mo_coeff-mcscf|mo_coeff-hf>  19  70    2.90942681
+<mo_coeff-mcscf|mo_coeff-hf>  19  71   -9.46459690
+<mo_coeff-mcscf|mo_coeff-hf>  19  73    5.72115845
+<mo_coeff-mcscf|mo_coeff-hf>  19  75   -1.38670500
+<mo_coeff-mcscf|mo_coeff-hf>  20  20    1.39784117
+<mo_coeff-mcscf|mo_coeff-hf>  20  41   -0.86452241
+<mo_coeff-mcscf|mo_coeff-hf>  20  42   -0.64417198
+<mo_coeff-mcscf|mo_coeff-hf>  20  55   -0.78688709
+<mo_coeff-mcscf|mo_coeff-hf>  21  2    0.56960703
+<mo_coeff-mcscf|mo_coeff-hf>  21  4   -0.40194751
+<mo_coeff-mcscf|mo_coeff-hf>  21  6   -2.95196443
+<mo_coeff-mcscf|mo_coeff-hf>  21  8   -0.62181346
+<mo_coeff-mcscf|mo_coeff-hf>  21  10   -1.37647115
+<mo_coeff-mcscf|mo_coeff-hf>  21  16   -0.90912465
+<mo_coeff-mcscf|mo_coeff-hf>  21  19   -8.63300872
+<mo_coeff-mcscf|mo_coeff-hf>  21  21   29.77736992
+<mo_coeff-mcscf|mo_coeff-hf>  21  23   10.31518731
+<mo_coeff-mcscf|mo_coeff-hf>  21  24  -15.63795927
+<mo_coeff-mcscf|mo_coeff-hf>  21  27   -6.78912404
+<mo_coeff-mcscf|mo_coeff-hf>  21  33    5.51307580
+<mo_coeff-mcscf|mo_coeff-hf>  21  35    6.69707067
+<mo_coeff-mcscf|mo_coeff-hf>  21  39   26.60552795
+<mo_coeff-mcscf|mo_coeff-hf>  21  40   33.49916753
+<mo_coeff-mcscf|mo_coeff-hf>  21  46  -48.91739093
+<mo_coeff-mcscf|mo_coeff-hf>  21  50   19.47804059
+<mo_coeff-mcscf|mo_coeff-hf>  21  51    1.35069333
+<mo_coeff-mcscf|mo_coeff-hf>  21  57   -2.85733492
+<mo_coeff-mcscf|mo_coeff-hf>  21  58   11.43010922
+<mo_coeff-mcscf|mo_coeff-hf>  21  62  -61.39166620
+<mo_coeff-mcscf|mo_coeff-hf>  21  64  -33.15202094
+<mo_coeff-mcscf|mo_coeff-hf>  21  67    4.80014857
+<mo_coeff-mcscf|mo_coeff-hf>  21  70   -9.88789321
+<mo_coeff-mcscf|mo_coeff-hf>  21  71   28.73489954
+<mo_coeff-mcscf|mo_coeff-hf>  21  73  -17.24063704
+<mo_coeff-mcscf|mo_coeff-hf>  21  75    4.79569947
+<mo_coeff-mcscf|mo_coeff-hf>  22  11   -0.41677273
+<mo_coeff-mcscf|mo_coeff-hf>  22  22    2.18886431
+<mo_coeff-mcscf|mo_coeff-hf>  22  34   -0.46375384
+<mo_coeff-mcscf|mo_coeff-hf>  22  41    2.18784991
+<mo_coeff-mcscf|mo_coeff-hf>  22  42    1.32700418
+<mo_coeff-mcscf|mo_coeff-hf>  22  44   -0.79612408
+<mo_coeff-mcscf|mo_coeff-hf>  22  45   -0.68298468
+<mo_coeff-mcscf|mo_coeff-hf>  22  49   -0.43780802
+<mo_coeff-mcscf|mo_coeff-hf>  22  55    1.57486904
+<mo_coeff-mcscf|mo_coeff-hf>  22  59    0.77869245
+<mo_coeff-mcscf|mo_coeff-hf>  22  63    0.62906515
+<mo_coeff-mcscf|mo_coeff-hf>  22  72   -0.73548952
+<mo_coeff-mcscf|mo_coeff-hf>  22  74    0.70786166
+<mo_coeff-mcscf|mo_coeff-hf>  22  76    0.42277727
+<mo_coeff-mcscf|mo_coeff-hf>  23  6   -0.84461838
+<mo_coeff-mcscf|mo_coeff-hf>  23  10   -0.49268228
+<mo_coeff-mcscf|mo_coeff-hf>  23  19   -3.33017431
+<mo_coeff-mcscf|mo_coeff-hf>  23  21   10.30351658
+<mo_coeff-mcscf|mo_coeff-hf>  23  23    4.64321661
+<mo_coeff-mcscf|mo_coeff-hf>  23  24   -5.59547433
+<mo_coeff-mcscf|mo_coeff-hf>  23  27   -2.32235230
+<mo_coeff-mcscf|mo_coeff-hf>  23  33    1.94856733
+<mo_coeff-mcscf|mo_coeff-hf>  23  35    2.30971809
+<mo_coeff-mcscf|mo_coeff-hf>  23  39    9.62067530
+<mo_coeff-mcscf|mo_coeff-hf>  23  40   12.03616596
+<mo_coeff-mcscf|mo_coeff-hf>  23  46  -17.37776734
+<mo_coeff-mcscf|mo_coeff-hf>  23  50    7.17199319
+<mo_coeff-mcscf|mo_coeff-hf>  23  51    0.44888203
+<mo_coeff-mcscf|mo_coeff-hf>  23  57   -1.06423572
+<mo_coeff-mcscf|mo_coeff-hf>  23  58    4.11336058
+<mo_coeff-mcscf|mo_coeff-hf>  23  62  -21.91860629
+<mo_coeff-mcscf|mo_coeff-hf>  23  64  -12.14152407
+<mo_coeff-mcscf|mo_coeff-hf>  23  67    1.82111340
+<mo_coeff-mcscf|mo_coeff-hf>  23  70   -3.44717536
+<mo_coeff-mcscf|mo_coeff-hf>  23  71   10.68070057
+<mo_coeff-mcscf|mo_coeff-hf>  23  73   -6.40708468
+<mo_coeff-mcscf|mo_coeff-hf>  23  75    1.56795945
+<mo_coeff-mcscf|mo_coeff-hf>  24  6    1.60058462
+<mo_coeff-mcscf|mo_coeff-hf>  24  10    0.67033985
+<mo_coeff-mcscf|mo_coeff-hf>  24  16    0.56990453
+<mo_coeff-mcscf|mo_coeff-hf>  24  19    4.69243603
+<mo_coeff-mcscf|mo_coeff-hf>  24  21  -15.61775929
+<mo_coeff-mcscf|mo_coeff-hf>  24  23   -5.59541324
+<mo_coeff-mcscf|mo_coeff-hf>  24  24    9.63977898
+<mo_coeff-mcscf|mo_coeff-hf>  24  27    3.62262955
+<mo_coeff-mcscf|mo_coeff-hf>  24  33   -2.97969738
+<mo_coeff-mcscf|mo_coeff-hf>  24  35   -3.57582545
+<mo_coeff-mcscf|mo_coeff-hf>  24  39  -14.54497088
+<mo_coeff-mcscf|mo_coeff-hf>  24  40  -18.08728082
+<mo_coeff-mcscf|mo_coeff-hf>  24  46   27.03233128
+<mo_coeff-mcscf|mo_coeff-hf>  24  50  -10.41632024
+<mo_coeff-mcscf|mo_coeff-hf>  24  51   -0.57528527
+<mo_coeff-mcscf|mo_coeff-hf>  24  57    1.52097377
+<mo_coeff-mcscf|mo_coeff-hf>  24  58   -6.15543384
+<mo_coeff-mcscf|mo_coeff-hf>  24  62   33.88348219
+<mo_coeff-mcscf|mo_coeff-hf>  24  64   18.06510192
+<mo_coeff-mcscf|mo_coeff-hf>  24  67   -2.63207088
+<mo_coeff-mcscf|mo_coeff-hf>  24  70    5.31497374
+<mo_coeff-mcscf|mo_coeff-hf>  24  71  -15.52967501
+<mo_coeff-mcscf|mo_coeff-hf>  24  73    9.37179933
+<mo_coeff-mcscf|mo_coeff-hf>  24  75   -2.67247855
+<mo_coeff-mcscf|mo_coeff-hf>  25  25    0.90735309
+<mo_coeff-mcscf|mo_coeff-hf>  26  26    1.09239044
+<mo_coeff-mcscf|mo_coeff-hf>  26  41    0.79998283
+<mo_coeff-mcscf|mo_coeff-hf>  26  45   -0.41048804
+<mo_coeff-mcscf|mo_coeff-hf>  26  49   -0.43165444
+<mo_coeff-mcscf|mo_coeff-hf>  27  6    0.54172700
+<mo_coeff-mcscf|mo_coeff-hf>  27  19    1.99950481
+<mo_coeff-mcscf|mo_coeff-hf>  27  21   -6.89798345
+<mo_coeff-mcscf|mo_coeff-hf>  27  23   -2.36426397
+<mo_coeff-mcscf|mo_coeff-hf>  27  24    3.68556023
+<mo_coeff-mcscf|mo_coeff-hf>  27  27    2.56112526
+<mo_coeff-mcscf|mo_coeff-hf>  27  33   -1.27403095
+<mo_coeff-mcscf|mo_coeff-hf>  27  35   -1.61290246
+<mo_coeff-mcscf|mo_coeff-hf>  27  39   -6.27196896
+<mo_coeff-mcscf|mo_coeff-hf>  27  40   -7.92766382
+<mo_coeff-mcscf|mo_coeff-hf>  27  46   11.56456056
+<mo_coeff-mcscf|mo_coeff-hf>  27  50   -4.60041797
+<mo_coeff-mcscf|mo_coeff-hf>  27  57    0.66426214
+<mo_coeff-mcscf|mo_coeff-hf>  27  58   -2.69692879
+<mo_coeff-mcscf|mo_coeff-hf>  27  62   14.49727694
+<mo_coeff-mcscf|mo_coeff-hf>  27  64    7.81408562
+<mo_coeff-mcscf|mo_coeff-hf>  27  67   -1.20236951
+<mo_coeff-mcscf|mo_coeff-hf>  27  70    2.33396298
+<mo_coeff-mcscf|mo_coeff-hf>  27  71   -6.82404370
+<mo_coeff-mcscf|mo_coeff-hf>  27  73    4.08643690
+<mo_coeff-mcscf|mo_coeff-hf>  27  75   -1.08443463
+<mo_coeff-mcscf|mo_coeff-hf>  28  28    1.18435883
+<mo_coeff-mcscf|mo_coeff-hf>  28  31   -0.41180923
+<mo_coeff-mcscf|mo_coeff-hf>  29  29    1.05367723
+<mo_coeff-mcscf|mo_coeff-hf>  29  40   -0.52644039
+<mo_coeff-mcscf|mo_coeff-hf>  29  62    0.51739842
+<mo_coeff-mcscf|mo_coeff-hf>  29  64    0.55837893
+<mo_coeff-mcscf|mo_coeff-hf>  29  71   -0.59268680
+<mo_coeff-mcscf|mo_coeff-hf>  30  30    1.06265934
+<mo_coeff-mcscf|mo_coeff-hf>  31  14    0.41266139
+<mo_coeff-mcscf|mo_coeff-hf>  31  18    0.59274858
+<mo_coeff-mcscf|mo_coeff-hf>  31  28   -0.41091647
+<mo_coeff-mcscf|mo_coeff-hf>  31  31    1.61793140
+<mo_coeff-mcscf|mo_coeff-hf>  31  48   -0.52908785
+<mo_coeff-mcscf|mo_coeff-hf>  32  32    0.98175200
+<mo_coeff-mcscf|mo_coeff-hf>  33  6   -0.51305311
+<mo_coeff-mcscf|mo_coeff-hf>  33  19   -1.73593839
+<mo_coeff-mcscf|mo_coeff-hf>  33  21    5.67788834
+<mo_coeff-mcscf|mo_coeff-hf>  33  23    2.01192368
+<mo_coeff-mcscf|mo_coeff-hf>  33  24   -3.07545404
+<mo_coeff-mcscf|mo_coeff-hf>  33  27   -1.29180622
+<mo_coeff-mcscf|mo_coeff-hf>  33  33    1.99810096
+<mo_coeff-mcscf|mo_coeff-hf>  33  35    1.26696746
+<mo_coeff-mcscf|mo_coeff-hf>  33  39    5.19850066
+<mo_coeff-mcscf|mo_coeff-hf>  33  40    6.51912031
+<mo_coeff-mcscf|mo_coeff-hf>  33  46   -9.59739351
+<mo_coeff-mcscf|mo_coeff-hf>  33  50    3.84650683
+<mo_coeff-mcscf|mo_coeff-hf>  33  57   -0.51617447
+<mo_coeff-mcscf|mo_coeff-hf>  33  58    2.19668287
+<mo_coeff-mcscf|mo_coeff-hf>  33  62  -12.00012865
+<mo_coeff-mcscf|mo_coeff-hf>  33  64   -6.42336100
+<mo_coeff-mcscf|mo_coeff-hf>  33  67    0.98251158
+<mo_coeff-mcscf|mo_coeff-hf>  33  70   -1.92558540
+<mo_coeff-mcscf|mo_coeff-hf>  33  71    5.67229005
+<mo_coeff-mcscf|mo_coeff-hf>  33  73   -3.43211330
+<mo_coeff-mcscf|mo_coeff-hf>  33  75    0.98197213
+<mo_coeff-mcscf|mo_coeff-hf>  34  22   -0.46075437
+<mo_coeff-mcscf|mo_coeff-hf>  34  34    1.54100925
+<mo_coeff-mcscf|mo_coeff-hf>  34  41   -1.56370313
+<mo_coeff-mcscf|mo_coeff-hf>  34  42   -0.50733100
+<mo_coeff-mcscf|mo_coeff-hf>  34  44    0.51592483
+<mo_coeff-mcscf|mo_coeff-hf>  34  45    0.78377621
+<mo_coeff-mcscf|mo_coeff-hf>  34  49    0.79533982
+<mo_coeff-mcscf|mo_coeff-hf>  34  52    0.53192107
+<mo_coeff-mcscf|mo_coeff-hf>  34  55   -0.47488881
+<mo_coeff-mcscf|mo_coeff-hf>  34  63   -0.51226662
+<mo_coeff-mcscf|mo_coeff-hf>  34  72    0.42305909
+<mo_coeff-mcscf|mo_coeff-hf>  34  74   -0.41558817
+<mo_coeff-mcscf|mo_coeff-hf>  35  6   -0.76791491
+<mo_coeff-mcscf|mo_coeff-hf>  35  19   -1.76565490
+<mo_coeff-mcscf|mo_coeff-hf>  35  21    6.77807031
+<mo_coeff-mcscf|mo_coeff-hf>  35  23    2.34133221
+<mo_coeff-mcscf|mo_coeff-hf>  35  24   -3.62407795
+<mo_coeff-mcscf|mo_coeff-hf>  35  27   -1.61120783
+<mo_coeff-mcscf|mo_coeff-hf>  35  33    1.24444971
+<mo_coeff-mcscf|mo_coeff-hf>  35  35    2.67179227
+<mo_coeff-mcscf|mo_coeff-hf>  35  39    6.08108557
+<mo_coeff-mcscf|mo_coeff-hf>  35  40    7.67089860
+<mo_coeff-mcscf|mo_coeff-hf>  35  46  -11.46577169
+<mo_coeff-mcscf|mo_coeff-hf>  35  50    4.35021820
+<mo_coeff-mcscf|mo_coeff-hf>  35  57   -0.56182554
+<mo_coeff-mcscf|mo_coeff-hf>  35  58    2.60538309
+<mo_coeff-mcscf|mo_coeff-hf>  35  62  -14.19108957
+<mo_coeff-mcscf|mo_coeff-hf>  35  64   -7.31108415
+<mo_coeff-mcscf|mo_coeff-hf>  35  67    0.97515361
+<mo_coeff-mcscf|mo_coeff-hf>  35  70   -2.41957184
+<mo_coeff-mcscf|mo_coeff-hf>  35  71    6.24340869
+<mo_coeff-mcscf|mo_coeff-hf>  35  73   -3.76437759
+<mo_coeff-mcscf|mo_coeff-hf>  35  75    1.34782555
+<mo_coeff-mcscf|mo_coeff-hf>  36  36    1.12471704
+<mo_coeff-mcscf|mo_coeff-hf>  36  41   -0.44286701
+<mo_coeff-mcscf|mo_coeff-hf>  37  37    0.95049033
+<mo_coeff-mcscf|mo_coeff-hf>  38  38    0.96663246
+<mo_coeff-mcscf|mo_coeff-hf>  39  2    0.56210888
+<mo_coeff-mcscf|mo_coeff-hf>  39  4   -0.40940410
+<mo_coeff-mcscf|mo_coeff-hf>  39  6   -2.78791777
+<mo_coeff-mcscf|mo_coeff-hf>  39  8   -0.67420174
+<mo_coeff-mcscf|mo_coeff-hf>  39  10   -1.24047750
+<mo_coeff-mcscf|mo_coeff-hf>  39  16   -0.84345008
+<mo_coeff-mcscf|mo_coeff-hf>  39  19   -8.81408792
+<mo_coeff-mcscf|mo_coeff-hf>  39  21   27.27154458
+<mo_coeff-mcscf|mo_coeff-hf>  39  23    9.87080911
+<mo_coeff-mcscf|mo_coeff-hf>  39  24  -14.92313045
+<mo_coeff-mcscf|mo_coeff-hf>  39  27   -6.32277987
+<mo_coeff-mcscf|mo_coeff-hf>  39  33    5.17058245
+<mo_coeff-mcscf|mo_coeff-hf>  39  35    6.15140726
+<mo_coeff-mcscf|mo_coeff-hf>  39  39   26.72184404
+<mo_coeff-mcscf|mo_coeff-hf>  39  40   32.04579960
+<mo_coeff-mcscf|mo_coeff-hf>  39  46  -46.55032279
+<mo_coeff-mcscf|mo_coeff-hf>  39  50   18.74881001
+<mo_coeff-mcscf|mo_coeff-hf>  39  51    1.37788638
+<mo_coeff-mcscf|mo_coeff-hf>  39  57   -2.68017042
+<mo_coeff-mcscf|mo_coeff-hf>  39  58   11.07598228
+<mo_coeff-mcscf|mo_coeff-hf>  39  62  -58.51437454
+<mo_coeff-mcscf|mo_coeff-hf>  39  64  -31.83485079
+<mo_coeff-mcscf|mo_coeff-hf>  39  67    4.45584712
+<mo_coeff-mcscf|mo_coeff-hf>  39  70   -9.41406677
+<mo_coeff-mcscf|mo_coeff-hf>  39  71   27.45242776
+<mo_coeff-mcscf|mo_coeff-hf>  39  73  -16.51401713
+<mo_coeff-mcscf|mo_coeff-hf>  39  75    4.80504267
+<mo_coeff-mcscf|mo_coeff-hf>  40  2    0.68107244
+<mo_coeff-mcscf|mo_coeff-hf>  40  4   -0.50171170
+<mo_coeff-mcscf|mo_coeff-hf>  40  6   -3.34837025
+<mo_coeff-mcscf|mo_coeff-hf>  40  8   -0.97316522
+<mo_coeff-mcscf|mo_coeff-hf>  40  10   -1.65026969
+<mo_coeff-mcscf|mo_coeff-hf>  40  16   -1.02174581
+<mo_coeff-mcscf|mo_coeff-hf>  40  19  -10.47842926
+<mo_coeff-mcscf|mo_coeff-hf>  40  21   33.12919299
+<mo_coeff-mcscf|mo_coeff-hf>  40  23   11.91589804
+<mo_coeff-mcscf|mo_coeff-hf>  40  24  -17.90818298
+<mo_coeff-mcscf|mo_coeff-hf>  40  27   -7.71368298
+<mo_coeff-mcscf|mo_coeff-hf>  40  33    6.25763037
+<mo_coeff-mcscf|mo_coeff-hf>  40  35    7.49196554
+<mo_coeff-mcscf|mo_coeff-hf>  40  39   30.88217538
+<mo_coeff-mcscf|mo_coeff-hf>  40  40   39.85819172
+<mo_coeff-mcscf|mo_coeff-hf>  40  46  -55.86134903
+<mo_coeff-mcscf|mo_coeff-hf>  40  50   22.75824791
+<mo_coeff-mcscf|mo_coeff-hf>  40  51    1.57357782
+<mo_coeff-mcscf|mo_coeff-hf>  40  57   -3.34249252
+<mo_coeff-mcscf|mo_coeff-hf>  40  58   13.32482763
+<mo_coeff-mcscf|mo_coeff-hf>  40  62  -70.32266696
+<mo_coeff-mcscf|mo_coeff-hf>  40  64  -38.63667940
+<mo_coeff-mcscf|mo_coeff-hf>  40  67    5.72895685
+<mo_coeff-mcscf|mo_coeff-hf>  40  70  -11.25995447
+<mo_coeff-mcscf|mo_coeff-hf>  40  71   33.64477474
+<mo_coeff-mcscf|mo_coeff-hf>  40  73  -20.18774274
+<mo_coeff-mcscf|mo_coeff-hf>  40  75    5.32656490
+<mo_coeff-mcscf|mo_coeff-hf>  41  9    0.90416343
+<mo_coeff-mcscf|mo_coeff-hf>  41  11   -0.71920997
+<mo_coeff-mcscf|mo_coeff-hf>  41  17   -0.98954953
+<mo_coeff-mcscf|mo_coeff-hf>  41  20   -0.86796758
+<mo_coeff-mcscf|mo_coeff-hf>  41  22    2.18577381
+<mo_coeff-mcscf|mo_coeff-hf>  41  26    0.79207124
+<mo_coeff-mcscf|mo_coeff-hf>  41  34   -1.56817724
+<mo_coeff-mcscf|mo_coeff-hf>  41  36   -0.44105761
+<mo_coeff-mcscf|mo_coeff-hf>  41  41    6.19479008
+<mo_coeff-mcscf|mo_coeff-hf>  41  42    2.66439906
+<mo_coeff-mcscf|mo_coeff-hf>  41  44   -1.63401923
+<mo_coeff-mcscf|mo_coeff-hf>  41  45   -2.13241554
+<mo_coeff-mcscf|mo_coeff-hf>  41  49   -1.66178750
+<mo_coeff-mcscf|mo_coeff-hf>  41  52   -1.31386935
+<mo_coeff-mcscf|mo_coeff-hf>  41  55    2.85248325
+<mo_coeff-mcscf|mo_coeff-hf>  41  59    1.64747474
+<mo_coeff-mcscf|mo_coeff-hf>  41  63    1.80910680
+<mo_coeff-mcscf|mo_coeff-hf>  41  69    0.43765903
+<mo_coeff-mcscf|mo_coeff-hf>  41  72   -1.54367915
+<mo_coeff-mcscf|mo_coeff-hf>  41  74    1.52664053
+<mo_coeff-mcscf|mo_coeff-hf>  41  76    0.43589867
+<mo_coeff-mcscf|mo_coeff-hf>  42  5   -0.44966950
+<mo_coeff-mcscf|mo_coeff-hf>  42  11   -0.46922172
+<mo_coeff-mcscf|mo_coeff-hf>  42  20   -0.64646909
+<mo_coeff-mcscf|mo_coeff-hf>  42  22    1.32807178
+<mo_coeff-mcscf|mo_coeff-hf>  42  34   -0.51647824
+<mo_coeff-mcscf|mo_coeff-hf>  42  41    2.66959865
+<mo_coeff-mcscf|mo_coeff-hf>  42  42    2.90798256
+<mo_coeff-mcscf|mo_coeff-hf>  42  44   -0.70723836
+<mo_coeff-mcscf|mo_coeff-hf>  42  45   -0.68253281
+<mo_coeff-mcscf|mo_coeff-hf>  42  55    2.42598078
+<mo_coeff-mcscf|mo_coeff-hf>  42  59    1.18019501
+<mo_coeff-mcscf|mo_coeff-hf>  42  63    0.82598722
+<mo_coeff-mcscf|mo_coeff-hf>  42  72   -0.70710804
+<mo_coeff-mcscf|mo_coeff-hf>  42  74    0.69214757
+<mo_coeff-mcscf|mo_coeff-hf>  42  76    0.43306882
+<mo_coeff-mcscf|mo_coeff-hf>  43  43    0.90337208
+<mo_coeff-mcscf|mo_coeff-hf>  44  22   -0.80701715
+<mo_coeff-mcscf|mo_coeff-hf>  44  34    0.52429012
+<mo_coeff-mcscf|mo_coeff-hf>  44  41   -1.66793481
+<mo_coeff-mcscf|mo_coeff-hf>  44  42   -0.71880881
+<mo_coeff-mcscf|mo_coeff-hf>  44  44    1.55995514
+<mo_coeff-mcscf|mo_coeff-hf>  44  45    0.77497403
+<mo_coeff-mcscf|mo_coeff-hf>  44  49    0.60372335
+<mo_coeff-mcscf|mo_coeff-hf>  44  55   -0.80550084
+<mo_coeff-mcscf|mo_coeff-hf>  44  59   -0.48279747
+<mo_coeff-mcscf|mo_coeff-hf>  44  63   -0.49964690
+<mo_coeff-mcscf|mo_coeff-hf>  44  72    0.55656317
+<mo_coeff-mcscf|mo_coeff-hf>  44  74   -0.60491670
+<mo_coeff-mcscf|mo_coeff-hf>  45  9   -0.50167162
+<mo_coeff-mcscf|mo_coeff-hf>  45  17    0.57169400
+<mo_coeff-mcscf|mo_coeff-hf>  45  22   -0.68642019
+<mo_coeff-mcscf|mo_coeff-hf>  45  26   -0.40851600
+<mo_coeff-mcscf|mo_coeff-hf>  45  34    0.78700096
+<mo_coeff-mcscf|mo_coeff-hf>  45  41   -2.14076560
+<mo_coeff-mcscf|mo_coeff-hf>  45  42   -0.68984419
+<mo_coeff-mcscf|mo_coeff-hf>  45  44    0.76746657
+<mo_coeff-mcscf|mo_coeff-hf>  45  45    2.14374969
+<mo_coeff-mcscf|mo_coeff-hf>  45  49    1.20145368
+<mo_coeff-mcscf|mo_coeff-hf>  45  52    0.77940463
+<mo_coeff-mcscf|mo_coeff-hf>  45  55   -0.57550698
+<mo_coeff-mcscf|mo_coeff-hf>  45  59   -0.42194317
+<mo_coeff-mcscf|mo_coeff-hf>  45  63   -0.75842729
+<mo_coeff-mcscf|mo_coeff-hf>  45  72    0.68584849
+<mo_coeff-mcscf|mo_coeff-hf>  45  74   -0.79024873
+<mo_coeff-mcscf|mo_coeff-hf>  46  2   -0.94802754
+<mo_coeff-mcscf|mo_coeff-hf>  46  4    0.62681832
+<mo_coeff-mcscf|mo_coeff-hf>  46  6    5.07512933
+<mo_coeff-mcscf|mo_coeff-hf>  46  8    0.93398852
+<mo_coeff-mcscf|mo_coeff-hf>  46  10    2.33817394
+<mo_coeff-mcscf|mo_coeff-hf>  46  16    1.73413392
+<mo_coeff-mcscf|mo_coeff-hf>  46  19   14.84862870
+<mo_coeff-mcscf|mo_coeff-hf>  46  21  -49.00581907
+<mo_coeff-mcscf|mo_coeff-hf>  46  23  -17.43026502
+<mo_coeff-mcscf|mo_coeff-hf>  46  24   27.11625971
+<mo_coeff-mcscf|mo_coeff-hf>  46  27   11.40329528
+<mo_coeff-mcscf|mo_coeff-hf>  46  33   -9.32769659
+<mo_coeff-mcscf|mo_coeff-hf>  46  35  -11.34831711
+<mo_coeff-mcscf|mo_coeff-hf>  46  39  -45.51397311
+<mo_coeff-mcscf|mo_coeff-hf>  46  40  -56.60014046
+<mo_coeff-mcscf|mo_coeff-hf>  46  46   85.33556872
+<mo_coeff-mcscf|mo_coeff-hf>  46  50  -32.79897337
+<mo_coeff-mcscf|mo_coeff-hf>  46  51   -2.19854611
+<mo_coeff-mcscf|mo_coeff-hf>  46  57    4.74948521
+<mo_coeff-mcscf|mo_coeff-hf>  46  58  -19.35387599
+<mo_coeff-mcscf|mo_coeff-hf>  46  62  105.54415224
+<mo_coeff-mcscf|mo_coeff-hf>  46  64   56.34420528
+<mo_coeff-mcscf|mo_coeff-hf>  46  67   -7.81097528
+<mo_coeff-mcscf|mo_coeff-hf>  46  70   16.90597949
+<mo_coeff-mcscf|mo_coeff-hf>  46  71  -48.39310362
+<mo_coeff-mcscf|mo_coeff-hf>  46  73   29.12360588
+<mo_coeff-mcscf|mo_coeff-hf>  46  75   -8.67071427
+<mo_coeff-mcscf|mo_coeff-hf>  47  47    1.01681628
+<mo_coeff-mcscf|mo_coeff-hf>  48  14   -0.41442520
+<mo_coeff-mcscf|mo_coeff-hf>  48  18   -0.54963892
+<mo_coeff-mcscf|mo_coeff-hf>  48  31   -0.52914567
+<mo_coeff-mcscf|mo_coeff-hf>  48  48    1.53816056
+<mo_coeff-mcscf|mo_coeff-hf>  48  54   -0.42663625
+<mo_coeff-mcscf|mo_coeff-hf>  48  60   -0.41836461
+<mo_coeff-mcscf|mo_coeff-hf>  48  66    0.43557295
+<mo_coeff-mcscf|mo_coeff-hf>  49  9   -0.40183926
+<mo_coeff-mcscf|mo_coeff-hf>  49  17    0.57924244
+<mo_coeff-mcscf|mo_coeff-hf>  49  22   -0.44008068
+<mo_coeff-mcscf|mo_coeff-hf>  49  26   -0.43211557
+<mo_coeff-mcscf|mo_coeff-hf>  49  34    0.79714779
+<mo_coeff-mcscf|mo_coeff-hf>  49  41   -1.66875561
+<mo_coeff-mcscf|mo_coeff-hf>  49  44    0.59918918
+<mo_coeff-mcscf|mo_coeff-hf>  49  45    1.20739031
+<mo_coeff-mcscf|mo_coeff-hf>  49  49    2.35624083
+<mo_coeff-mcscf|mo_coeff-hf>  49  52    0.89395766
+<mo_coeff-mcscf|mo_coeff-hf>  49  63   -0.66314596
+<mo_coeff-mcscf|mo_coeff-hf>  49  72    0.62731846
+<mo_coeff-mcscf|mo_coeff-hf>  49  74   -0.72380951
+<mo_coeff-mcscf|mo_coeff-hf>  50  6   -1.73681476
+<mo_coeff-mcscf|mo_coeff-hf>  50  8   -0.64445093
+<mo_coeff-mcscf|mo_coeff-hf>  50  10   -0.92706974
+<mo_coeff-mcscf|mo_coeff-hf>  50  16   -0.65888013
+<mo_coeff-mcscf|mo_coeff-hf>  50  19   -6.35532867
+<mo_coeff-mcscf|mo_coeff-hf>  50  21   19.59505599
+<mo_coeff-mcscf|mo_coeff-hf>  50  23    7.22222831
+<mo_coeff-mcscf|mo_coeff-hf>  50  24  -10.49401616
+<mo_coeff-mcscf|mo_coeff-hf>  50  27   -4.55327513
+<mo_coeff-mcscf|mo_coeff-hf>  50  33    3.75696306
+<mo_coeff-mcscf|mo_coeff-hf>  50  35    4.32193356
+<mo_coeff-mcscf|mo_coeff-hf>  50  39   18.40105820
+<mo_coeff-mcscf|mo_coeff-hf>  50  40   23.14845688
+<mo_coeff-mcscf|mo_coeff-hf>  50  46  -32.94167719
+<mo_coeff-mcscf|mo_coeff-hf>  50  50   14.92944496
+<mo_coeff-mcscf|mo_coeff-hf>  50  51    1.01010392
+<mo_coeff-mcscf|mo_coeff-hf>  50  57   -1.90171651
+<mo_coeff-mcscf|mo_coeff-hf>  50  58    7.86010901
+<mo_coeff-mcscf|mo_coeff-hf>  50  62  -41.44768010
+<mo_coeff-mcscf|mo_coeff-hf>  50  64  -22.83468904
+<mo_coeff-mcscf|mo_coeff-hf>  50  67    3.39342463
+<mo_coeff-mcscf|mo_coeff-hf>  50  70   -6.68988754
+<mo_coeff-mcscf|mo_coeff-hf>  50  71   20.23907466
+<mo_coeff-mcscf|mo_coeff-hf>  50  73  -12.15422093
+<mo_coeff-mcscf|mo_coeff-hf>  50  75    3.30159510
+<mo_coeff-mcscf|mo_coeff-hf>  51  21    1.35082793
+<mo_coeff-mcscf|mo_coeff-hf>  51  23    0.44929419
+<mo_coeff-mcscf|mo_coeff-hf>  51  24   -0.57650257
+<mo_coeff-mcscf|mo_coeff-hf>  51  39    1.34895401
+<mo_coeff-mcscf|mo_coeff-hf>  51  40    1.59456562
+<mo_coeff-mcscf|mo_coeff-hf>  51  46   -2.19735480
+<mo_coeff-mcscf|mo_coeff-hf>  51  50    1.00545442
+<mo_coeff-mcscf|mo_coeff-hf>  51  51    1.20424260
+<mo_coeff-mcscf|mo_coeff-hf>  51  58    0.55152759
+<mo_coeff-mcscf|mo_coeff-hf>  51  62   -2.58154815
+<mo_coeff-mcscf|mo_coeff-hf>  51  64   -1.22925227
+<mo_coeff-mcscf|mo_coeff-hf>  51  70   -0.59646350
+<mo_coeff-mcscf|mo_coeff-hf>  51  71    1.08759134
+<mo_coeff-mcscf|mo_coeff-hf>  51  73   -0.67756823
+<mo_coeff-mcscf|mo_coeff-hf>  51  75    0.53246777
+<mo_coeff-mcscf|mo_coeff-hf>  52  34    0.53479487
+<mo_coeff-mcscf|mo_coeff-hf>  52  41   -1.32481583
+<mo_coeff-mcscf|mo_coeff-hf>  52  45    0.78305436
+<mo_coeff-mcscf|mo_coeff-hf>  52  49    0.89510579
+<mo_coeff-mcscf|mo_coeff-hf>  52  52    1.60733070
+<mo_coeff-mcscf|mo_coeff-hf>  52  63   -0.56959101
+<mo_coeff-mcscf|mo_coeff-hf>  53  53    0.97461931
+<mo_coeff-mcscf|mo_coeff-hf>  54  48   -0.42662510
+<mo_coeff-mcscf|mo_coeff-hf>  54  54    1.29584129
+<mo_coeff-mcscf|mo_coeff-hf>  55  5   -0.64225743
+<mo_coeff-mcscf|mo_coeff-hf>  55  11   -0.57990376
+<mo_coeff-mcscf|mo_coeff-hf>  55  20   -0.78905760
+<mo_coeff-mcscf|mo_coeff-hf>  55  22    1.57365818
+<mo_coeff-mcscf|mo_coeff-hf>  55  34   -0.48095679
+<mo_coeff-mcscf|mo_coeff-hf>  55  41    2.85185763
+<mo_coeff-mcscf|mo_coeff-hf>  55  42    2.42337345
+<mo_coeff-mcscf|mo_coeff-hf>  55  44   -0.79067277
+<mo_coeff-mcscf|mo_coeff-hf>  55  45   -0.56557613
+<mo_coeff-mcscf|mo_coeff-hf>  55  55    4.04900908
+<mo_coeff-mcscf|mo_coeff-hf>  55  59    1.45723400
+<mo_coeff-mcscf|mo_coeff-hf>  55  63    0.77678144
+<mo_coeff-mcscf|mo_coeff-hf>  55  72   -0.74229235
+<mo_coeff-mcscf|mo_coeff-hf>  55  74    0.67193240
+<mo_coeff-mcscf|mo_coeff-hf>  55  76    0.50196589
+<mo_coeff-mcscf|mo_coeff-hf>  56  56    1.00194151
+<mo_coeff-mcscf|mo_coeff-hf>  57  19    0.86366302
+<mo_coeff-mcscf|mo_coeff-hf>  57  21   -2.70466676
+<mo_coeff-mcscf|mo_coeff-hf>  57  23   -1.01241550
+<mo_coeff-mcscf|mo_coeff-hf>  57  24    1.44024365
+<mo_coeff-mcscf|mo_coeff-hf>  57  27    0.61782339
+<mo_coeff-mcscf|mo_coeff-hf>  57  33   -0.47129109
+<mo_coeff-mcscf|mo_coeff-hf>  57  35   -0.51799336
+<mo_coeff-mcscf|mo_coeff-hf>  57  39   -2.47099512
+<mo_coeff-mcscf|mo_coeff-hf>  57  40   -3.20302437
+<mo_coeff-mcscf|mo_coeff-hf>  57  46    4.47187063
+<mo_coeff-mcscf|mo_coeff-hf>  57  50   -1.79132286
+<mo_coeff-mcscf|mo_coeff-hf>  57  57    1.33891425
+<mo_coeff-mcscf|mo_coeff-hf>  57  58   -1.08107470
+<mo_coeff-mcscf|mo_coeff-hf>  57  62    5.74040680
+<mo_coeff-mcscf|mo_coeff-hf>  57  64    3.29120961
+<mo_coeff-mcscf|mo_coeff-hf>  57  67   -0.69435314
+<mo_coeff-mcscf|mo_coeff-hf>  57  70    0.78057459
+<mo_coeff-mcscf|mo_coeff-hf>  57  71   -2.91848024
+<mo_coeff-mcscf|mo_coeff-hf>  57  73    1.73840580
+<mo_coeff-mcscf|mo_coeff-hf>  58  6   -1.23212706
+<mo_coeff-mcscf|mo_coeff-hf>  58  10   -0.50499938
+<mo_coeff-mcscf|mo_coeff-hf>  58  19   -3.67295209
+<mo_coeff-mcscf|mo_coeff-hf>  58  21   11.36297203
+<mo_coeff-mcscf|mo_coeff-hf>  58  23    4.09293497
+<mo_coeff-mcscf|mo_coeff-hf>  58  24   -6.12665505
+<mo_coeff-mcscf|mo_coeff-hf>  58  27   -2.63814871
+<mo_coeff-mcscf|mo_coeff-hf>  58  33    2.11858576
+<mo_coeff-mcscf|mo_coeff-hf>  58  35    2.55818982
+<mo_coeff-mcscf|mo_coeff-hf>  58  39   10.74535113
+<mo_coeff-mcscf|mo_coeff-hf>  58  40   13.39580704
+<mo_coeff-mcscf|mo_coeff-hf>  58  46  -19.20309726
+<mo_coeff-mcscf|mo_coeff-hf>  58  50    7.76738546
+<mo_coeff-mcscf|mo_coeff-hf>  58  51    0.54940288
+<mo_coeff-mcscf|mo_coeff-hf>  58  57   -1.13407979
+<mo_coeff-mcscf|mo_coeff-hf>  58  58    5.68981434
+<mo_coeff-mcscf|mo_coeff-hf>  58  62  -24.17940155
+<mo_coeff-mcscf|mo_coeff-hf>  58  64  -13.30166877
+<mo_coeff-mcscf|mo_coeff-hf>  58  67    1.95368966
+<mo_coeff-mcscf|mo_coeff-hf>  58  70   -3.88455046
+<mo_coeff-mcscf|mo_coeff-hf>  58  71   11.40629491
+<mo_coeff-mcscf|mo_coeff-hf>  58  73   -6.82842251
+<mo_coeff-mcscf|mo_coeff-hf>  58  75    1.84509370
+<mo_coeff-mcscf|mo_coeff-hf>  59  22    0.77902366
+<mo_coeff-mcscf|mo_coeff-hf>  59  41    1.64990342
+<mo_coeff-mcscf|mo_coeff-hf>  59  42    1.18005268
+<mo_coeff-mcscf|mo_coeff-hf>  59  44   -0.47528373
+<mo_coeff-mcscf|mo_coeff-hf>  59  45   -0.41866540
+<mo_coeff-mcscf|mo_coeff-hf>  59  55    1.45864891
+<mo_coeff-mcscf|mo_coeff-hf>  59  59    1.70769143
+<mo_coeff-mcscf|mo_coeff-hf>  59  63    0.52272356
+<mo_coeff-mcscf|mo_coeff-hf>  59  72   -0.40315411
+<mo_coeff-mcscf|mo_coeff-hf>  60  48   -0.41809554
+<mo_coeff-mcscf|mo_coeff-hf>  60  60    1.33419006
+<mo_coeff-mcscf|mo_coeff-hf>  60  66   -0.46603563
+<mo_coeff-mcscf|mo_coeff-hf>  61  61    1.03074651
+<mo_coeff-mcscf|mo_coeff-hf>  62  2   -1.19338227
+<mo_coeff-mcscf|mo_coeff-hf>  62  4    0.79594944
+<mo_coeff-mcscf|mo_coeff-hf>  62  6    6.33753307
+<mo_coeff-mcscf|mo_coeff-hf>  62  8    1.15866099
+<mo_coeff-mcscf|mo_coeff-hf>  62  10    2.90026801
+<mo_coeff-mcscf|mo_coeff-hf>  62  16    2.15974605
+<mo_coeff-mcscf|mo_coeff-hf>  62  19   18.89994267
+<mo_coeff-mcscf|mo_coeff-hf>  62  21  -61.59964236
+<mo_coeff-mcscf|mo_coeff-hf>  62  23  -22.02073428
+<mo_coeff-mcscf|mo_coeff-hf>  62  24   34.03893003
+<mo_coeff-mcscf|mo_coeff-hf>  62  27   14.31637721
+<mo_coeff-mcscf|mo_coeff-hf>  62  33  -11.68445253
+<mo_coeff-mcscf|mo_coeff-hf>  62  35  -14.06450262
+<mo_coeff-mcscf|mo_coeff-hf>  62  39  -57.29821525
+<mo_coeff-mcscf|mo_coeff-hf>  62  40  -71.36415265
+<mo_coeff-mcscf|mo_coeff-hf>  62  46  105.70562762
+<mo_coeff-mcscf|mo_coeff-hf>  62  50  -41.34071783
+<mo_coeff-mcscf|mo_coeff-hf>  62  51   -2.58792756
+<mo_coeff-mcscf|mo_coeff-hf>  62  57    6.09586383
+<mo_coeff-mcscf|mo_coeff-hf>  62  58  -24.40877238
+<mo_coeff-mcscf|mo_coeff-hf>  62  62  133.53961407
+<mo_coeff-mcscf|mo_coeff-hf>  62  64   71.33200589
+<mo_coeff-mcscf|mo_coeff-hf>  62  67  -10.18709873
+<mo_coeff-mcscf|mo_coeff-hf>  62  70   21.02717718
+<mo_coeff-mcscf|mo_coeff-hf>  62  71  -61.36948028
+<mo_coeff-mcscf|mo_coeff-hf>  62  73   36.92724329
+<mo_coeff-mcscf|mo_coeff-hf>  62  75  -10.45629159
+<mo_coeff-mcscf|mo_coeff-hf>  63  22    0.62830872
+<mo_coeff-mcscf|mo_coeff-hf>  63  34   -0.51390565
+<mo_coeff-mcscf|mo_coeff-hf>  63  41    1.81157404
+<mo_coeff-mcscf|mo_coeff-hf>  63  42    0.82478405
+<mo_coeff-mcscf|mo_coeff-hf>  63  44   -0.48831366
+<mo_coeff-mcscf|mo_coeff-hf>  63  45   -0.75623637
+<mo_coeff-mcscf|mo_coeff-hf>  63  49   -0.66090834
+<mo_coeff-mcscf|mo_coeff-hf>  63  52   -0.56598812
+<mo_coeff-mcscf|mo_coeff-hf>  63  55    0.77742675
+<mo_coeff-mcscf|mo_coeff-hf>  63  59    0.52124670
+<mo_coeff-mcscf|mo_coeff-hf>  63  63    1.72244684
+<mo_coeff-mcscf|mo_coeff-hf>  63  72   -0.51123229
+<mo_coeff-mcscf|mo_coeff-hf>  63  74    0.47740474
+<mo_coeff-mcscf|mo_coeff-hf>  64  2   -0.66795985
+<mo_coeff-mcscf|mo_coeff-hf>  64  4    0.50532899
+<mo_coeff-mcscf|mo_coeff-hf>  64  6    3.25526325
+<mo_coeff-mcscf|mo_coeff-hf>  64  8    0.75680892
+<mo_coeff-mcscf|mo_coeff-hf>  64  10    1.44437883
+<mo_coeff-mcscf|mo_coeff-hf>  64  16    1.07129779
+<mo_coeff-mcscf|mo_coeff-hf>  64  19   10.78924177
+<mo_coeff-mcscf|mo_coeff-hf>  64  21  -33.26135450
+<mo_coeff-mcscf|mo_coeff-hf>  64  23  -12.19467276
+<mo_coeff-mcscf|mo_coeff-hf>  64  24   18.14804678
+<mo_coeff-mcscf|mo_coeff-hf>  64  27    7.71320128
+<mo_coeff-mcscf|mo_coeff-hf>  64  33   -6.25293412
+<mo_coeff-mcscf|mo_coeff-hf>  64  35   -7.24146840
+<mo_coeff-mcscf|mo_coeff-hf>  64  39  -31.15885810
+<mo_coeff-mcscf|mo_coeff-hf>  64  40  -39.19569918
+<mo_coeff-mcscf|mo_coeff-hf>  64  46   56.42214947
+<mo_coeff-mcscf|mo_coeff-hf>  64  50  -22.77409226
+<mo_coeff-mcscf|mo_coeff-hf>  64  51   -1.23482560
+<mo_coeff-mcscf|mo_coeff-hf>  64  57    3.47718408
+<mo_coeff-mcscf|mo_coeff-hf>  64  58  -13.43229408
+<mo_coeff-mcscf|mo_coeff-hf>  64  62   71.31696549
+<mo_coeff-mcscf|mo_coeff-hf>  64  64   40.36040041
+<mo_coeff-mcscf|mo_coeff-hf>  64  67   -6.07979003
+<mo_coeff-mcscf|mo_coeff-hf>  64  70   11.06844221
+<mo_coeff-mcscf|mo_coeff-hf>  64  71  -34.22443762
+<mo_coeff-mcscf|mo_coeff-hf>  64  73   20.59624366
+<mo_coeff-mcscf|mo_coeff-hf>  64  75   -5.07785186
+<mo_coeff-mcscf|mo_coeff-hf>  65  65    1.11461557
+<mo_coeff-mcscf|mo_coeff-hf>  66  48    0.43506035
+<mo_coeff-mcscf|mo_coeff-hf>  66  60   -0.46570196
+<mo_coeff-mcscf|mo_coeff-hf>  66  66    1.51600133
+<mo_coeff-mcscf|mo_coeff-hf>  67  19   -1.63468543
+<mo_coeff-mcscf|mo_coeff-hf>  67  21    4.71189473
+<mo_coeff-mcscf|mo_coeff-hf>  67  23    1.79420727
+<mo_coeff-mcscf|mo_coeff-hf>  67  24   -2.58641372
+<mo_coeff-mcscf|mo_coeff-hf>  67  27   -1.16330739
+<mo_coeff-mcscf|mo_coeff-hf>  67  33    0.93782695
+<mo_coeff-mcscf|mo_coeff-hf>  67  35    0.94071211
+<mo_coeff-mcscf|mo_coeff-hf>  67  39    4.25780357
+<mo_coeff-mcscf|mo_coeff-hf>  67  40    5.68673114
+<mo_coeff-mcscf|mo_coeff-hf>  67  46   -7.64293456
+<mo_coeff-mcscf|mo_coeff-hf>  67  50    3.31371870
+<mo_coeff-mcscf|mo_coeff-hf>  67  57   -0.71001075
+<mo_coeff-mcscf|mo_coeff-hf>  67  58    1.93147619
+<mo_coeff-mcscf|mo_coeff-hf>  67  62   -9.95309307
+<mo_coeff-mcscf|mo_coeff-hf>  67  64   -5.95988470
+<mo_coeff-mcscf|mo_coeff-hf>  67  67    2.19500606
+<mo_coeff-mcscf|mo_coeff-hf>  67  70   -1.37195623
+<mo_coeff-mcscf|mo_coeff-hf>  67  71    5.38669879
+<mo_coeff-mcscf|mo_coeff-hf>  67  73   -3.14901334
+<mo_coeff-mcscf|mo_coeff-hf>  68  68    1.04900952
+<mo_coeff-mcscf|mo_coeff-hf>  69  41    0.44051189
+<mo_coeff-mcscf|mo_coeff-hf>  69  69    1.19185372
+<mo_coeff-mcscf|mo_coeff-hf>  69  74    0.42109744
+<mo_coeff-mcscf|mo_coeff-hf>  70  6    1.08505860
+<mo_coeff-mcscf|mo_coeff-hf>  70  10    0.52205422
+<mo_coeff-mcscf|mo_coeff-hf>  70  19    2.87838589
+<mo_coeff-mcscf|mo_coeff-hf>  70  21   -9.90961568
+<mo_coeff-mcscf|mo_coeff-hf>  70  23   -3.45900792
+<mo_coeff-mcscf|mo_coeff-hf>  70  24    5.33374553
+<mo_coeff-mcscf|mo_coeff-hf>  70  27    2.30271514
+<mo_coeff-mcscf|mo_coeff-hf>  70  33   -1.87344849
+<mo_coeff-mcscf|mo_coeff-hf>  70  35   -2.39866948
+<mo_coeff-mcscf|mo_coeff-hf>  70  39   -9.21104172
+<mo_coeff-mcscf|mo_coeff-hf>  70  40  -11.41499351
+<mo_coeff-mcscf|mo_coeff-hf>  70  46   16.91480693
+<mo_coeff-mcscf|mo_coeff-hf>  70  50   -6.66518468
+<mo_coeff-mcscf|mo_coeff-hf>  70  51   -0.59564140
+<mo_coeff-mcscf|mo_coeff-hf>  70  57    0.83544564
+<mo_coeff-mcscf|mo_coeff-hf>  70  58   -3.91522694
+<mo_coeff-mcscf|mo_coeff-hf>  70  62   21.00573343
+<mo_coeff-mcscf|mo_coeff-hf>  70  64   11.05664546
+<mo_coeff-mcscf|mo_coeff-hf>  70  67   -1.40607356
+<mo_coeff-mcscf|mo_coeff-hf>  70  70    4.55728109
+<mo_coeff-mcscf|mo_coeff-hf>  70  71   -9.48087931
+<mo_coeff-mcscf|mo_coeff-hf>  70  73    5.71008348
+<mo_coeff-mcscf|mo_coeff-hf>  70  75   -2.00840904
+<mo_coeff-mcscf|mo_coeff-hf>  71  2    0.53356044
+<mo_coeff-mcscf|mo_coeff-hf>  71  4   -0.45478358
+<mo_coeff-mcscf|mo_coeff-hf>  71  6   -2.55671807
+<mo_coeff-mcscf|mo_coeff-hf>  71  8   -0.79600249
+<mo_coeff-mcscf|mo_coeff-hf>  71  10   -1.31419471
+<mo_coeff-mcscf|mo_coeff-hf>  71  16   -0.94360198
+<mo_coeff-mcscf|mo_coeff-hf>  71  19   -9.36531112
+<mo_coeff-mcscf|mo_coeff-hf>  71  21   28.76869535
+<mo_coeff-mcscf|mo_coeff-hf>  71  23   10.70592259
+<mo_coeff-mcscf|mo_coeff-hf>  71  24  -15.57027264
+<mo_coeff-mcscf|mo_coeff-hf>  71  27   -6.72182026
+<mo_coeff-mcscf|mo_coeff-hf>  71  33    5.51434221
+<mo_coeff-mcscf|mo_coeff-hf>  71  35    6.16920516
+<mo_coeff-mcscf|mo_coeff-hf>  71  39   26.80822153
+<mo_coeff-mcscf|mo_coeff-hf>  71  40   34.05610927
+<mo_coeff-mcscf|mo_coeff-hf>  71  46  -48.35699245
+<mo_coeff-mcscf|mo_coeff-hf>  71  50   20.14759865
+<mo_coeff-mcscf|mo_coeff-hf>  71  51    1.08929722
+<mo_coeff-mcscf|mo_coeff-hf>  71  57   -3.06893917
+<mo_coeff-mcscf|mo_coeff-hf>  71  58   11.48995804
+<mo_coeff-mcscf|mo_coeff-hf>  71  62  -61.22432771
+<mo_coeff-mcscf|mo_coeff-hf>  71  64  -34.15358129
+<mo_coeff-mcscf|mo_coeff-hf>  71  67    5.47442270
+<mo_coeff-mcscf|mo_coeff-hf>  71  70   -9.47019826
+<mo_coeff-mcscf|mo_coeff-hf>  71  71   31.26523353
+<mo_coeff-mcscf|mo_coeff-hf>  71  73  -18.16750853
+<mo_coeff-mcscf|mo_coeff-hf>  71  75    4.12830434
+<mo_coeff-mcscf|mo_coeff-hf>  72  22   -0.73764824
+<mo_coeff-mcscf|mo_coeff-hf>  72  34    0.42597424
+<mo_coeff-mcscf|mo_coeff-hf>  72  41   -1.54995840
+<mo_coeff-mcscf|mo_coeff-hf>  72  42   -0.70846288
+<mo_coeff-mcscf|mo_coeff-hf>  72  44    0.55280599
+<mo_coeff-mcscf|mo_coeff-hf>  72  45    0.68635399
+<mo_coeff-mcscf|mo_coeff-hf>  72  49    0.62709834
+<mo_coeff-mcscf|mo_coeff-hf>  72  55   -0.74600966
+<mo_coeff-mcscf|mo_coeff-hf>  72  59   -0.40549216
+<mo_coeff-mcscf|mo_coeff-hf>  72  63   -0.51587205
+<mo_coeff-mcscf|mo_coeff-hf>  72  72    1.54637388
+<mo_coeff-mcscf|mo_coeff-hf>  72  74   -0.67769133
+<mo_coeff-mcscf|mo_coeff-hf>  73  6    1.54314968
+<mo_coeff-mcscf|mo_coeff-hf>  73  8    0.47247346
+<mo_coeff-mcscf|mo_coeff-hf>  73  10    0.78425760
+<mo_coeff-mcscf|mo_coeff-hf>  73  16    0.57692855
+<mo_coeff-mcscf|mo_coeff-hf>  73  19    5.66829962
+<mo_coeff-mcscf|mo_coeff-hf>  73  21  -17.28204519
+<mo_coeff-mcscf|mo_coeff-hf>  73  23   -6.42966567
+<mo_coeff-mcscf|mo_coeff-hf>  73  24    9.40759070
+<mo_coeff-mcscf|mo_coeff-hf>  73  27    4.03002118
+<mo_coeff-mcscf|mo_coeff-hf>  73  33   -3.34063768
+<mo_coeff-mcscf|mo_coeff-hf>  73  35   -3.72440755
+<mo_coeff-mcscf|mo_coeff-hf>  73  39  -16.14675941
+<mo_coeff-mcscf|mo_coeff-hf>  73  40  -20.45993655
+<mo_coeff-mcscf|mo_coeff-hf>  73  46   29.13710695
+<mo_coeff-mcscf|mo_coeff-hf>  73  50  -12.11367244
+<mo_coeff-mcscf|mo_coeff-hf>  73  51   -0.67913632
+<mo_coeff-mcscf|mo_coeff-hf>  73  57    1.83294538
+<mo_coeff-mcscf|mo_coeff-hf>  73  58   -6.88724946
+<mo_coeff-mcscf|mo_coeff-hf>  73  62   36.88585639
+<mo_coeff-mcscf|mo_coeff-hf>  73  64   20.57895278
+<mo_coeff-mcscf|mo_coeff-hf>  73  67   -3.20985152
+<mo_coeff-mcscf|mo_coeff-hf>  73  70    5.71032417
+<mo_coeff-mcscf|mo_coeff-hf>  73  71  -18.18917281
+<mo_coeff-mcscf|mo_coeff-hf>  73  73   11.95359326
+<mo_coeff-mcscf|mo_coeff-hf>  73  75   -2.57513717
+<mo_coeff-mcscf|mo_coeff-hf>  74  22    0.70953292
+<mo_coeff-mcscf|mo_coeff-hf>  74  34   -0.41803520
+<mo_coeff-mcscf|mo_coeff-hf>  74  41    1.53093133
+<mo_coeff-mcscf|mo_coeff-hf>  74  42    0.69266049
+<mo_coeff-mcscf|mo_coeff-hf>  74  44   -0.60082217
+<mo_coeff-mcscf|mo_coeff-hf>  74  45   -0.79056477
+<mo_coeff-mcscf|mo_coeff-hf>  74  49   -0.72326669
+<mo_coeff-mcscf|mo_coeff-hf>  74  55    0.67512703
+<mo_coeff-mcscf|mo_coeff-hf>  74  63    0.48115497
+<mo_coeff-mcscf|mo_coeff-hf>  74  69    0.41967558
+<mo_coeff-mcscf|mo_coeff-hf>  74  72   -0.67813373
+<mo_coeff-mcscf|mo_coeff-hf>  74  74    1.99505822
+<mo_coeff-mcscf|mo_coeff-hf>  74  76    0.59401312
+<mo_coeff-mcscf|mo_coeff-hf>  75  6   -0.63775461
+<mo_coeff-mcscf|mo_coeff-hf>  75  19   -1.36818584
+<mo_coeff-mcscf|mo_coeff-hf>  75  21    4.79553706
+<mo_coeff-mcscf|mo_coeff-hf>  75  23    1.56954064
+<mo_coeff-mcscf|mo_coeff-hf>  75  24   -2.67491841
+<mo_coeff-mcscf|mo_coeff-hf>  75  27   -1.06684623
+<mo_coeff-mcscf|mo_coeff-hf>  75  33    0.95390381
+<mo_coeff-mcscf|mo_coeff-hf>  75  35    1.33507696
+<mo_coeff-mcscf|mo_coeff-hf>  75  39    4.70033463
+<mo_coeff-mcscf|mo_coeff-hf>  75  40    5.39368456
+<mo_coeff-mcscf|mo_coeff-hf>  75  46   -8.65768594
+<mo_coeff-mcscf|mo_coeff-hf>  75  50    3.28186171
+<mo_coeff-mcscf|mo_coeff-hf>  75  51    0.53046675
+<mo_coeff-mcscf|mo_coeff-hf>  75  58    1.85540173
+<mo_coeff-mcscf|mo_coeff-hf>  75  62  -10.42568774
+<mo_coeff-mcscf|mo_coeff-hf>  75  64   -5.06025859
+<mo_coeff-mcscf|mo_coeff-hf>  75  70   -2.00301481
+<mo_coeff-mcscf|mo_coeff-hf>  75  71    4.12260568
+<mo_coeff-mcscf|mo_coeff-hf>  75  73   -2.56938277
+<mo_coeff-mcscf|mo_coeff-hf>  75  75    2.66514333
+<mo_coeff-mcscf|mo_coeff-hf>  76  22    0.42300663
+<mo_coeff-mcscf|mo_coeff-hf>  76  41    0.43703918
+<mo_coeff-mcscf|mo_coeff-hf>  76  42    0.43298550
+<mo_coeff-mcscf|mo_coeff-hf>  76  55    0.50431096
+<mo_coeff-mcscf|mo_coeff-hf>  76  74    0.59321641
+<mo_coeff-mcscf|mo_coeff-hf>  76  76    1.64530017
+** Largest CI components **
+  [alpha occ-orbitals] [beta occ-orbitals]            CI coefficient
+  [0]                  [0]                            0.955213052921
+  [1]                  [1]                            -0.295918947567
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 C 1s        1.99999
+pop of  0 C 2s        0.96417
+pop of  0 C 3s        0.00507
+pop of  0 C 2px       1.04529
+pop of  0 C 2py       1.05637
+pop of  0 C 2pz       0.98795
+pop of  0 C 3px       0.00708
+pop of  0 C 3py       0.00458
+pop of  0 C 3pz       0.00788
+pop of  0 C 3dxy      0.00261
+pop of  0 C 3dyz      0.00071
+pop of  0 C 3dz^2     0.00221
+pop of  0 C 3dxz      0.00312
+pop of  0 C 3dx2-y2    0.00185
+pop of  1 C 1s        1.99999
+pop of  1 C 2s        0.96417
+pop of  1 C 3s        0.00507
+pop of  1 C 2px       1.04529
+pop of  1 C 2py       1.05637
+pop of  1 C 2pz       0.98795
+pop of  1 C 3px       0.00708
+pop of  1 C 3py       0.00458
+pop of  1 C 3pz       0.00788
+pop of  1 C 3dxy      0.00261
+pop of  1 C 3dyz      0.00071
+pop of  1 C 3dz^2     0.00221
+pop of  1 C 3dxz      0.00312
+pop of  1 C 3dx2-y2    0.00185
+pop of  2 H 1s        0.89963
+pop of  2 H 2s        0.00876
+pop of  2 H 2px       0.00020
+pop of  2 H 2py       0.00221
+pop of  2 H 2pz       0.00034
+pop of  3 H 1s        0.89963
+pop of  3 H 2s        0.00876
+pop of  3 H 2px       0.00020
+pop of  3 H 2py       0.00221
+pop of  3 H 2pz       0.00034
+pop of  4 C 1s        1.99999
+pop of  4 C 2s        0.96417
+pop of  4 C 3s        0.00507
+pop of  4 C 2px       1.04529
+pop of  4 C 2py       1.05637
+pop of  4 C 2pz       0.98795
+pop of  4 C 3px       0.00708
+pop of  4 C 3py       0.00458
+pop of  4 C 3pz       0.00788
+pop of  4 C 3dxy      0.00261
+pop of  4 C 3dyz      0.00071
+pop of  4 C 3dz^2     0.00221
+pop of  4 C 3dxz      0.00312
+pop of  4 C 3dx2-y2    0.00185
+pop of  5 C 1s        1.99999
+pop of  5 C 2s        0.96417
+pop of  5 C 3s        0.00507
+pop of  5 C 2px       1.04529
+pop of  5 C 2py       1.05637
+pop of  5 C 2pz       0.98795
+pop of  5 C 3px       0.00708
+pop of  5 C 3py       0.00458
+pop of  5 C 3pz       0.00788
+pop of  5 C 3dxy      0.00261
+pop of  5 C 3dyz      0.00071
+pop of  5 C 3dz^2     0.00221
+pop of  5 C 3dxz      0.00312
+pop of  5 C 3dx2-y2    0.00185
+pop of  6 H 1s        0.89963
+pop of  6 H 2s        0.00876
+pop of  6 H 2px       0.00020
+pop of  6 H 2py       0.00221
+pop of  6 H 2pz       0.00034
+pop of  7 H 1s        0.89963
+pop of  7 H 2s        0.00876
+pop of  7 H 2px       0.00020
+pop of  7 H 2py       0.00221
+pop of  7 H 2pz       0.00034
+ ** Mulliken atomic charges  **
+charge of  0C =     -0.08886
+charge of  1C =     -0.08886
+charge of  2H =      0.08886
+charge of  3H =      0.08886
+charge of  4C =     -0.08886
+charge of  5C =     -0.08886
+charge of  6H =      0.08886
+charge of  7H =      0.08886

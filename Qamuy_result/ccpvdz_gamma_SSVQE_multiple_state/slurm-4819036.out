@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/nas/longleaf/home/ryzhou/Qamuy/ccpvdz_gamma_SSVQE_multiple_state/test_sto_two_gamma_cas44.py", line 57, in <module>
+    input.cost_function.overlap_weights= 1000.0
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/qamuy_data_model/model/wrapped_pb.py", line 175, in __setattr__
+    pb_value = _marshal.to_proto(pb_type, value)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/proto/marshal/marshal.py", line 211, in to_proto
+    pb_value = rule.to_proto(value)
+  File "/nas/longleaf/home/ryzhou/miniconda3/lib/python3.9/site-packages/proto/marshal/rules/struct.py", line 107, in to_proto
+    values=[self._marshal.to_proto(struct_pb2.Value, v) for v in value]
+TypeError: 'float' object is not iterable

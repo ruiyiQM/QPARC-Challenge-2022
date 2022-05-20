@@ -1,0 +1,70 @@
+{
+  "target_periodic_system": {
+      "geometry": {
+        "atoms":  ["C","C","H","H","C","C","H", "H","C","C","H","H"],
+        "coords": [
+ 	 [-0.58442 ,  -0.32662 , 0.0 ],
+ 	 [ 0.58442 ,  0.32662 ,  0.0  ],
+	 [ 0.58442  , 1.40362   ,0.0],
+	 [ -0.58442   ,-1.40362 , 0.0 ],
+	 [1.8845799999999997 ,      -0.32662 , 0.0 ],
+	 [3.05342 ,   0.32662,  0.0 ],
+	 [3.05342 ,   1.40362,  0.0 ],
+	 [1.8845799999999997 ,      -1.40362 , 0.0],
+	 [4.35358 , -0.32662 , 0.0] ,
+	 [5.522419999999999       ,   0.32662 , 0.0],
+	 [5.522419999999999       ,   1.40362 , 0.0],
+	 [4.35358 , -1.40362 , 0.0]
+ 	],
+     "trans_vector": [
+ 	[ 7.407, 0, 0],
+ 	[0,10, 0],
+ 	[0, 0, 10]
+ 	],
+     "kpt_grid_shape": [1, 1, 1],
+     "dimension": 1
+  },
+  "cas": {
+    "active_ele": 4,
+    "active_orb": 4
+  },
+      "basis": "ccpvdz",
+      "charge": 0,
+      "multiplicity": 1,
+      "sz_number": 0,
+      "num_excited_states": 1
+  },
+  "solver": {
+    "type": "SSVQE"
+  },
+  "mapping": {
+    "type": "JORDAN_WIGNER"
+  },
+  "cost_function": {
+    "type": "SIMPLE",
+    "SSVQE_weights": [4, 1],
+    "s2_number_weight": 4.0,
+    "sz_number_weight": 4.0
+  },
+  "ansatz": {
+    "type": "UCCSD",
+    "trotter_steps": 4,
+    "spin_adapted_ref_state": true,
+    "reference_state": "RHF",
+    "use_random_initial_guess": true,
+    "randomness_variance": 0.75,
+    "randomness_type": "GAUSSIAN",
+    "depth": 4
+  },
+  "optimizer": {
+    "type": "BFGS",
+    "ftol": 1e-06,
+    "gtol": 1e-06,
+    "max_iter": 100000,
+    "max_fev": 100000,
+    "max_run": 100000
+  },
+  "quantum_device": {
+  "type": "EXACT_SIMULATOR"
+}
+}
