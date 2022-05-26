@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "/nas/longleaf/home/ryzhou/Qamuy/pyscf_result/TDHF/ccpvdz.py", line 84, in <module>
-    td = tdscf.KTDHF(kmf,frozen=cas_list)
-TypeError: KTDHF() got an unexpected keyword argument 'frozen'
