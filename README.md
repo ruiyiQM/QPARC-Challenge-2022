@@ -14,5 +14,17 @@ According to Peierls distortion, electron-correlation effect can be controlled t
 In the end, I will talk about current challenges and difficulties in finding excited states of extended systems. Meanwhile, borrowing the idea from  SCF, I will also propose to design a new quantum algorithm to target excited states around certain energy range . 
 
 
+# Preliminary Calculation
+
+2 folded Supercell trans-polyactylene 28 electrons
+
+Basis Set: cc-pvdz
+
+Quantum Solver: VQE (GS), SSVQE (ES), VQD(ES)
+
+Classical Computer Result (pyscf): CCSD(GS), CASCI (GS)，EOM-CCSD (ES)
+
+
+
  
 
